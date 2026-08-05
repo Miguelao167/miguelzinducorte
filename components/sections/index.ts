@@ -1,0 +1,6 @@
+export { default as Hero } from './Hero'
+export { default as Services } from './Services'
+export { default as Plans } from './Plans'
+export { default as Gallery } from './Gallery'
+export { default as Stats } from './Stats'
+export { default as BookingCTA } from './BookingCTA'
