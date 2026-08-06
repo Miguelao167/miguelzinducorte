@@ -9,6 +9,10 @@
 # next.js
 /.next/
 /out/
+/.cache/
+
+# Cloudflare
+/.wrangler/
 
 # production
 /build
