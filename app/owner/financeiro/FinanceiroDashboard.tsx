@@ -16,6 +16,7 @@ import {
   QrCode,
   ArrowLeft,
   CreditCard,
+  Scissors,
 } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 
@@ -34,6 +35,17 @@ interface AgendamentoPago {
   createdAt: string
 }
 
+interface AssinaturaResumo {
+  id: string
+  dataInicio: string
+  dataExpiracao: string
+  cortesRestantes: number
+  cortesUsados: number
+  ativa: boolean
+  cliente: { nome: string; telefone: string }
+  plano: { nome: string; preco: number; numeroCortes: number }
+}
+
 const metodoPagamentoLabels: Record<string, string> = {
   manual: 'Dinheiro',
   dinheiro: 'Dinheiro',
@@ -46,6 +58,7 @@ const metodoPagamentoLabels: Record<string, string> = {
 export default function FinanceiroDashboard({ user }: { user: OwnerUser }) {
   const router = useRouter()
   const [agendamentosPagos, setAgendamentosPagos] = useState<AgendamentoPago[]>([])
+  const [assinaturas, setAssinaturas] = useState<AssinaturaResumo[]>([])
   const [loading, setLoading] = useState(true)
   const [mesSelecionado, setMesSelecionado] = useState(() => {
     const now = new Date()
@@ -56,10 +69,17 @@ export default function FinanceiroDashboard({ user }: { user: OwnerUser }) {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/financeiro')
-      if (res.ok) {
-        const json = await res.json()
+      const [finRes, assRes] = await Promise.all([
+        fetch('/api/financeiro'),
+        fetch('/api/assinaturas'),
+      ])
+      if (finRes.ok) {
+        const json = await finRes.json()
         setAgendamentosPagos(json.agendamentosPagos || [])
+      }
+      if (assRes.ok) {
+        const json = await assRes.json()
+        setAssinaturas(json.assinaturas || [])
       }
     } catch (err) {
       console.error(err)
@@ -164,6 +184,13 @@ export default function FinanceiroDashboard({ user }: { user: OwnerUser }) {
                 <QrCode className="w-4 h-4" />
                 Cobranças
               </a>
+              <a
+                href="/owner/planos"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50"
+              >
+                <Scissors className="w-4 h-4" />
+                Planos
+              </a>
               <button
                 onClick={fetchData}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50"
@@ -266,6 +293,43 @@ export default function FinanceiroDashboard({ user }: { user: OwnerUser }) {
               </button>
             </div>
           </div>
+
+          {/* Assinaturas Ativas */}
+          {assinaturas.length > 0 && (
+            <div className="bg-white rounded-2xl border border-accent-primary/10 shadow-sm p-6 mb-6">
+              <h2 className="text-xl font-bold text-text-primary mb-4 flex items-center gap-2">
+                <Scissors className="w-5 h-5 text-accent-primary" />
+                Assinaturas Ativas ({assinaturas.length})
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {assinaturas.map((a) => (
+                  <div key={a.id} className="border border-accent-primary/10 rounded-xl p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <div className="font-bold text-text-primary">{a.cliente.nome}</div>
+                        <div className="text-sm text-text-muted">{a.plano.nome}</div>
+                      </div>
+                      <span className="text-lg font-bold text-accent-primary">
+                        {a.cortesRestantes}/{a.plano.numeroCortes}
+                      </span>
+                    </div>
+                    <div className="text-sm text-text-secondary flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      Expira em {formatDate(a.dataExpiracao)}
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2 mt-3 overflow-hidden">
+                      <div
+                        className="bg-accent-primary h-2 transition-all"
+                        style={{
+                          width: `${(a.cortesRestantes / a.plano.numeroCortes) * 100}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Lista de Pagamentos do Mês */}
           {loading && (

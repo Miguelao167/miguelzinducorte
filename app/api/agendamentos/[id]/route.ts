@@ -21,10 +21,34 @@ export async function PUT(
     }
 
     const { id } = await params
+    const agendamentoAtual = await prisma.agendamento.findUnique({ where: { id } })
+
     const agendamento = await prisma.agendamento.update({
       where: { id },
       data: { status }
     })
+
+    // Se mudou para concluido e o cliente tem plano ativo, decrementa 1 corte
+    if (status === 'concluido' && agendamentoAtual?.status !== 'concluido' && agendamento.clienteId) {
+      const assinaturaAtiva = await prisma.assinatura.findFirst({
+        where: {
+          clienteId: agendamento.clienteId,
+          ativa: true,
+          dataExpiracao: { gte: new Date() },
+          cortesRestantes: { gt: 0 },
+        },
+      })
+
+      if (assinaturaAtiva) {
+        await prisma.assinatura.update({
+          where: { id: assinaturaAtiva.id },
+          data: {
+            cortesRestantes: { decrement: 1 },
+            cortesUsados: { increment: 1 },
+          },
+        })
+      }
+    }
 
     return NextResponse.json(agendamento)
   } catch (error) {
