@@ -233,6 +233,13 @@ export default function Footer() {
               </button>
               <a href="#" className="text-text-muted hover:text-accent-primary transition-colors">Privacidade</a>
               <a href="#" className="text-text-muted hover:text-accent-primary transition-colors">Termos</a>
+              <a
+                href="/owner/login"
+                className="text-text-muted/50 hover:text-accent-primary/70 transition-colors text-xs"
+                title="Área do Owner"
+              >
+                Login
+              </a>
             </div>
           </div>
         </div>

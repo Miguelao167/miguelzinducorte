@@ -1,16 +1,32 @@
 'use client'
 
-import { useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ArrowLeft, User, Phone, Calendar, Clock, MessageSquare, CheckCircle2 } from 'lucide-react'
+import {
+  ArrowLeft,
+  User,
+  Phone,
+  Calendar,
+  Clock,
+  MessageSquare,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+} from 'lucide-react'
 import Button from '@/components/ui/Button'
 import GlowText from '@/components/ui/GlowText'
-import { CONTACT_INFO } from '@/lib/constants'
+import {
+  getHorariosForDate,
+  getNomeDia,
+  getDescricaoHorario,
+} from '@/lib/horarios'
 
 export default function AgendarForm() {
   const searchParams = useSearchParams()
+  const router = useRouter()
+
   const tipo = searchParams.get('tipo') === 'plano' ? 'plano' : 'servico'
   const nome = searchParams.get('nome') || ''
   const preco = searchParams.get('preco') || ''
@@ -23,7 +39,36 @@ export default function AgendarForm() {
     observacoes: '',
   })
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [horariosDisponiveis, setHorariosDisponiveis] = useState<string[]>([])
+  const [horariosOcupados, setHorariosOcupados] = useState<string[]>([])
+  const [carregandoHorarios, setCarregandoHorarios] = useState(false)
+
+  // Quando mudar a data, gerar lista de horários
+  useEffect(() => {
+    if (formData.data) {
+      const disponiveis = getHorariosForDate(formData.data)
+      setHorariosDisponiveis(disponiveis)
+      setFormData(prev => ({ ...prev, horario: '' }))
+
+      // Buscar horários ocupados
+      setCarregandoHorarios(true)
+      fetch(`/api/horarios/ocupados?data=${formData.data}`)
+        .then(r => r.json())
+        .then(data => {
+          setHorariosOcupados(data.horariosOcupados || [])
+        })
+        .catch(err => {
+          console.error('Erro ao buscar horários:', err)
+          setHorariosOcupados([])
+        })
+        .finally(() => setCarregandoHorarios(false))
+    } else {
+      setHorariosDisponiveis([])
+      setHorariosOcupados([])
+    }
+  }, [formData.data])
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -31,29 +76,61 @@ export default function AgendarForm() {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Data mínima = hoje
+  const hoje = new Date().toISOString().split('T')[0]
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!formData.nomeCliente.trim() || !formData.telefone.trim()) {
       setError('Preencha nome e telefone para continuar.')
       return
     }
+
+    if (!formData.data) {
+      setError('Escolha uma data para agendar.')
+      return
+    }
+
+    if (!formData.horario) {
+      setError('Escolha um horário disponível.')
+      return
+    }
+
+    // Verificar se horário ainda está disponível
+    if (horariosOcupados.includes(formData.horario)) {
+      setError('Este horário acabou de ser ocupado. Escolha outro.')
+      return
+    }
+
     setError('')
+    setLoading(true)
 
-    const linhas = [
-      `Olá! Gostaria de agendar um horário no Miguelzin Du Corte.`,
-      ``,
-      nome ? `${tipo === 'plano' ? 'Plano' : 'Serviço'}: ${nome}${preco ? ` (R$ ${preco})` : ''}` : '',
-      `Nome: ${formData.nomeCliente}`,
-      `Telefone: ${formData.telefone}`,
-      formData.data ? `Data de preferência: ${formData.data}` : '',
-      formData.horario ? `Horário de preferência: ${formData.horario}` : '',
-      formData.observacoes ? `Observações: ${formData.observacoes}` : '',
-    ].filter(Boolean)
+    try {
+      const res = await fetch('/api/agendamentos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nomeCliente: formData.nomeCliente,
+          telefone: formData.telefone,
+          servico: nome || null,
+          preco: preco || null,
+          dataPreferida: formData.data || null,
+          horario: formData.horario || null,
+          observacoes: formData.observacoes || null,
+        }),
+      })
 
-    const message = encodeURIComponent(linhas.join('\n'))
-    setSubmitted(true)
-    window.open(`https://wa.me/${CONTACT_INFO.whatsapp}?text=${message}`, '_blank')
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Erro ao salvar')
+      }
+
+      setSubmitted(true)
+    } catch (err: any) {
+      setError(err.message || 'Erro ao processar agendamento.')
+      setLoading(false)
+    }
   }
 
   return (
@@ -86,7 +163,7 @@ export default function AgendarForm() {
             </p>
           ) : (
             <p className="text-text-secondary text-lg mb-10">
-              Preencha seus dados e horário de preferência.
+              Preencha seus dados e escolha um horário disponível.
             </p>
           )}
 
@@ -94,6 +171,28 @@ export default function AgendarForm() {
             onSubmit={handleSubmit}
             className="p-8 md:p-10 rounded-3xl bg-white border border-accent-primary/15 shadow-card-light space-y-6"
           >
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex items-center gap-2 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm"
+              >
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                {error}
+              </motion.div>
+            )}
+
+            {submitted && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex items-center gap-2 p-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm"
+              >
+                <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                Agendamento confirmado com sucesso! Entraremos em contato pelo WhatsApp.
+              </motion.div>
+            )}
+
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-text-primary mb-2">
                 <User className="w-4 h-4 text-accent-primary" />
@@ -105,7 +204,9 @@ export default function AgendarForm() {
                 value={formData.nomeCliente}
                 onChange={handleChange}
                 placeholder="Seu nome"
-                className="w-full px-4 py-3 rounded-xl border border-accent-primary/20 bg-bg-secondary/50 text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-primary/40 transition-all"
+                required
+                disabled={loading || submitted}
+                className="w-full px-4 py-3 rounded-xl border border-accent-primary/20 bg-bg-secondary/50 text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-primary/40 transition-all disabled:opacity-50"
               />
             </div>
 
@@ -120,39 +221,104 @@ export default function AgendarForm() {
                 value={formData.telefone}
                 onChange={handleChange}
                 placeholder="(34) 99999-9999"
-                className="w-full px-4 py-3 rounded-xl border border-accent-primary/20 bg-bg-secondary/50 text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-primary/40 transition-all"
+                required
+                disabled={loading || submitted}
+                className="w-full px-4 py-3 rounded-xl border border-accent-primary/20 bg-bg-secondary/50 text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-primary/40 transition-all disabled:opacity-50"
               />
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-6">
-              <div>
-                <label className="flex items-center gap-2 text-sm font-semibold text-text-primary mb-2">
-                  <Calendar className="w-4 h-4 text-accent-primary" />
-                  Data de preferência
-                </label>
-                <input
-                  type="date"
-                  name="data"
-                  value={formData.data}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-accent-primary/20 bg-bg-secondary/50 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/40 transition-all"
-                />
-              </div>
+            {/* Data */}
+            <div>
+              <label className="flex items-center gap-2 text-sm font-semibold text-text-primary mb-2">
+                <Calendar className="w-4 h-4 text-accent-primary" />
+                Data
+              </label>
+              <input
+                type="date"
+                name="data"
+                value={formData.data}
+                onChange={handleChange}
+                min={hoje}
+                required
+                disabled={loading || submitted}
+                className="w-full px-4 py-3 rounded-xl border border-accent-primary/20 bg-bg-secondary/50 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/40 transition-all disabled:opacity-50"
+              />
+              {formData.data && (
+                <p className="text-xs text-text-muted mt-2">
+                  <strong>{getNomeDia(formData.data)}</strong> · {getDescricaoHorario(formData.data)}
+                </p>
+              )}
+            </div>
 
+            {/* Horários Disponíveis */}
+            {formData.data && (
               <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-text-primary mb-2">
                   <Clock className="w-4 h-4 text-accent-primary" />
-                  Horário de preferência
+                  Escolha um horário
                 </label>
-                <input
-                  type="time"
-                  name="horario"
-                  value={formData.horario}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-accent-primary/20 bg-bg-secondary/50 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/40 transition-all"
-                />
+
+                {carregandoHorarios ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="w-5 h-5 animate-spin text-accent-primary" />
+                    <span className="ml-2 text-sm text-text-secondary">Carregando horários...</span>
+                  </div>
+                ) : horariosDisponiveis.length === 0 ? (
+                  <p className="text-sm text-red-600 p-3 bg-red-50 rounded-lg border border-red-200">
+                    Não atendemos neste dia. Por favor escolha outra data.
+                  </p>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                      {horariosDisponiveis.map((horario) => {
+                        const ocupado = horariosOcupados.includes(horario)
+                        const selecionado = formData.horario === horario
+
+                        return (
+                          <button
+                            key={horario}
+                            type="button"
+                            disabled={ocupado}
+                            onClick={() => setFormData(prev => ({ ...prev, horario }))}
+                            className={`px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                              selecionado
+                                ? 'bg-accent-primary text-white shadow-md'
+                                : ocupado
+                                ? 'bg-gray-100 text-gray-400 line-through cursor-not-allowed'
+                                : 'bg-bg-secondary text-text-primary hover:bg-accent-light hover:border-accent-primary border border-transparent'
+                            }`}
+                          >
+                            {horario}
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    {/* Legenda */}
+                    <div className="flex items-center gap-4 mt-3 text-xs text-text-muted">
+                      <span className="flex items-center gap-1">
+                        <span className="w-3 h-3 rounded bg-bg-secondary border border-gray-300"></span>
+                        Disponível
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <span className="w-3 h-3 rounded bg-accent-primary"></span>
+                        Selecionado
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <span className="w-3 h-3 rounded bg-gray-100"></span>
+                        Ocupado
+                      </span>
+                    </div>
+
+                    {horariosOcupados.length > 0 && (
+                      <p className="text-xs text-orange-600 mt-2">
+                        ⚠️ {horariosOcupados.length} horário(s) já agendado(s) neste dia
+                      </p>
+                    )}
+                  </>
+                )}
               </div>
-            </div>
+            )}
 
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-text-primary mb-2">
@@ -165,25 +331,30 @@ export default function AgendarForm() {
                 onChange={handleChange}
                 rows={3}
                 placeholder="Alguma preferência ou detalhe extra?"
-                className="w-full px-4 py-3 rounded-xl border border-accent-primary/20 bg-bg-secondary/50 text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-primary/40 transition-all resize-none"
+                disabled={loading || submitted}
+                className="w-full px-4 py-3 rounded-xl border border-accent-primary/20 bg-bg-secondary/50 text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-primary/40 transition-all resize-none disabled:opacity-50"
               />
             </div>
 
-            <p className="text-xs text-text-muted">
-              Atendemos {CONTACT_INFO.hours.weekdays} · {CONTACT_INFO.hours.weekend} · {CONTACT_INFO.hours.closed}
-            </p>
-
-            {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
-
-            {submitted && (
-              <div className="flex items-center gap-2 text-sm text-green-600 font-medium">
-                <CheckCircle2 className="w-4 h-4" />
-                Abrimos o WhatsApp com seus dados preenchidos. É só enviar a mensagem!
-              </div>
-            )}
-
-            <Button type="submit" size="lg" className="w-full">
-              Confirmar e enviar pelo WhatsApp
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full"
+              disabled={loading || submitted}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Salvando...
+                </>
+              ) : submitted ? (
+                <>
+                  <CheckCircle2 className="w-5 h-5" />
+                  Agendamento Confirmado!
+                </>
+              ) : (
+                'Confirmar Agendamento'
+              )}
             </Button>
           </form>
         </motion.div>

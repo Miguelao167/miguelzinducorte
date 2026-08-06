@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  // Removido output: 'export' para permitir rotas dinâmicas (login, banco)
   images: {
     unoptimized: true,
   },
