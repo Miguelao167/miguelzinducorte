@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -62,7 +62,7 @@ model PixConfig {
   id              String   @id @default(cuid())
   userId          String   @unique
   chavePix        String
-  tipoChave       String   // cpf, cnpj, email, telefone, aleatoria
+  tipoChave       String
   nomeRecebedor   String
   cidade          String
   createdAt       DateTime @default(now())

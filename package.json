@@ -5,10 +5,12 @@
   "scripts": {
     "dev": "next dev",
     "build": "npx prisma generate && next build",
+    "build:cloudflare": "npx prisma generate && npx next build",
     "start": "next start",
     "lint": "next lint",
     "db:generate": "npx prisma generate",
     "db:push": "npx prisma db push",
+    "db:push:cloudflare": "npx wrangler d1 execute miguelzin-barber-db --remote --file=./prisma/cloudflare-init.sql",
     "db:studio": "npx prisma studio",
     "db:seed": "npx tsx prisma/create-owner.ts",
     "create:owner": "npx tsx prisma/create-owner.ts"
@@ -17,6 +19,7 @@
     "next": "15.0.3",
     "jose": "^5.9.6",
     "@prisma/client": "^5.22.0",
+    "@prisma/adapter-d1": "^5.22.0",
     "bcryptjs": "^2.4.3",
     "qrcode": "^1.5.4",
     "react": "18.3.1",
@@ -34,6 +37,8 @@
   },
   "devDependencies": {
     "prisma": "^5.22.0",
+    "@cloudflare/workers-types": "^4.20241218.0",
+    "wrangler": "^3.99.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/qrcode": "^1.5.5",
     "tsx": "^4.19.0",
