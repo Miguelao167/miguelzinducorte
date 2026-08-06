@@ -268,7 +268,7 @@ export default function ConfiguracoesPainel({ user }: { user: OwnerUser }) {
                       <ul className="space-y-1 list-disc list-inside">
                         <li>O QR Code é gerado direto com sua chave PIX</li>
                         <li>Quando o cliente paga, o dinheiro cai <strong>instantaneamente</strong> na sua conta</li>
-                        <li>Você marca como "Pago" no painel após confirmar</li>
+                        <li>Você marca como &quot;Pago&quot; no painel após confirmar</li>
                         <li><strong>Sem taxas, sem intermediários</strong></li>
                       </ul>
                     </div>

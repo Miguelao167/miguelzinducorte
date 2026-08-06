@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { LogIn, Lock, Mail, ArrowLeft, AlertCircle } from 'lucide-react'
@@ -119,13 +120,13 @@ export default function LoginPage() {
 
       {/* Footer */}
       <div className="px-6 pb-6">
-        <a
+        <Link
           href="/"
           className="flex items-center justify-center gap-2 text-sm text-text-secondary hover:text-accent-primary transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Voltar ao site
-        </a>
+        </Link>
       </div>
     </motion.div>
   )
