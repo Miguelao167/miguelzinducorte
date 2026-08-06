@@ -4,7 +4,7 @@ import { getCurrentUser } from '@/lib/auth-helper'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser()
@@ -20,8 +20,9 @@ export async function PUT(
       return NextResponse.json({ error: 'Status inválido' }, { status: 400 })
     }
 
+    const { id } = await params
     const agendamento = await prisma.agendamento.update({
-      where: { id: params.id },
+      where: { id },
       data: { status }
     })
 
@@ -34,7 +35,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser()
@@ -43,8 +44,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
+    const { id } = await params
     await prisma.agendamento.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({ success: true })

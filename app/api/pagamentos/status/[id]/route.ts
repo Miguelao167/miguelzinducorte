@@ -5,11 +5,12 @@ import { prisma } from '@/lib/prisma'
 // No sistema direto, o owner marca manualmente como pago
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const pagamento = await prisma.pagamento.findUnique({
-      where: { paymentId: params.id },
+      where: { paymentId: id },
     })
 
     if (!pagamento) {
@@ -29,11 +30,12 @@ export async function GET(
 // POST - Marcar pagamento como aprovado (chamado pelo owner no painel)
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const pagamento = await prisma.pagamento.update({
-      where: { paymentId: params.id },
+      where: { paymentId: id },
       data: { status: 'aprovado' },
     })
 
