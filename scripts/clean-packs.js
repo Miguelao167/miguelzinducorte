@@ -24,4 +24,3 @@ function removePackFiles(dir) {
 
 removePackFiles(cacheDir);
 console.log('Limpeza de cache concluída.');
-

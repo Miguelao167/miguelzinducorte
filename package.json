@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx prisma generate && NEXT_TELEMETRY_DISABLED=1 next build && node scripts/clean-packs.js",
+    "build": "npx prisma generate && NEXT_TELEMETRY_DISABLED=1 next build && node scripts/clean-packs.js && npx opennextjs-cloudflare build",
     "start": "next start",
     "lint": "next lint",
     "db:generate": "npx prisma generate",
@@ -31,6 +31,8 @@
   },
   "devDependencies": {
     "prisma": "^5.22.0",
+    "@opennextjs/cloudflare": "^1.4.0",
+    "wrangler": "^3.91.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/qrcode": "^1.5.5",
     "tsx": "^4.19.0",
