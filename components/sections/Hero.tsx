@@ -111,7 +111,7 @@ export default function Hero() {
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
           className="mb-8"
         >
           <motion.div
@@ -129,9 +129,9 @@ export default function Hero() {
 
         {/* Logo Grande */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.4, delay: 0.05, ease: 'easeOut' }}
           className="mb-8 flex justify-center"
         >
           <motion.div
@@ -140,7 +140,7 @@ export default function Hero() {
             transition={{ type: 'spring', stiffness: 200 }}
           >
             {/* Glow behind logo */}
-            <div className="absolute inset-0 bg-accent-primary/20 blur-3xl rounded-full" />
+            <div className="absolute inset-0 bg-accent-primary/20 blur-2xl rounded-full" />
             
             {/* Big logo text */}
             <div className="relative flex flex-col items-center">
@@ -168,17 +168,17 @@ export default function Hero() {
         {/* Animated Subtitle */}
         <motion.div
           className="max-w-2xl mx-auto mb-12 h-20"
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.4, delay: 0.3, ease: 'easeOut' }}
         >
           <AnimatePresence mode="wait">
             <motion.p
               key={titleIndex}
-              initial={{ opacity: 0, filter: 'blur(10px)', y: 20 }}
-              animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
-              exit={{ opacity: 0, filter: 'blur(10px)', y: -20 }}
-              transition={{ duration: 0.5 }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.3 }}
               className="text-lg md:text-xl text-text-secondary leading-relaxed"
             >
               {SUBTITLES[titleIndex]}
@@ -220,7 +220,7 @@ export default function Hero() {
           className="mt-20 flex flex-wrap items-center justify-center gap-12"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1.2 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
         >
           {[
             { value: '2+', label: 'Anos de experiência' },
