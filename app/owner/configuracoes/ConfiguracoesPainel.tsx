@@ -1,23 +1,18 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
   Key,
   Save,
   Check,
-  LogOut,
-  DollarSign,
-  ArrowLeft,
   Building2,
   User as UserIcon,
   Smartphone,
   Hash,
-  RefreshCw,
   AlertCircle,
 } from 'lucide-react'
-import Navbar from '@/components/layout/Navbar'
+import OwnerShell from '@/components/owner/OwnerShell'
 
 interface OwnerUser {
   id: string
@@ -109,46 +104,17 @@ export default function ConfiguracoesPainel({ user }: { user: OwnerUser }) {
   const tipoAtual = tiposChave.find(t => t.value === config.tipoChave)
 
   return (
-    <>
-      <Navbar />
-
-      <main className="min-h-screen pt-32 pb-12 bg-gradient-to-br from-white via-bg-secondary/50 to-white">
-        <div className="container-custom max-w-3xl mx-auto">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-text-primary flex items-center gap-2">
-                <Key className="w-8 h-8 text-accent-primary" />
-                Configurações
-              </h1>
-              <p className="text-text-secondary mt-1">
-                Configure sua chave PIX para receber pagamentos
-              </p>
-            </div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <a
-                href="/owner"
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Agendamentos
-              </a>
-              <a
-                href="/owner/cobrancas"
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50"
-              >
-                <DollarSign className="w-4 h-4" />
-                Cobranças
-              </a>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 transition-colors border border-red-200 rounded-lg hover:bg-red-50"
-              >
-                <LogOut className="w-4 h-4" />
-                Sair
-              </button>
-            </div>
-          </div>
+    <OwnerShell title="Configurações">
+      <div className="max-w-3xl">
+        <div className="mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-text-primary flex items-center gap-2">
+            <Key className="w-7 h-7 text-accent-primary" />
+            Configurações
+          </h1>
+          <p className="text-text-secondary mt-1">
+            Configure sua chave PIX para receber pagamentos
+          </p>
+        </div>
 
           {loading ? (
             <div className="flex justify-center py-12">
@@ -295,8 +261,7 @@ export default function ConfiguracoesPainel({ user }: { user: OwnerUser }) {
               </form>
             </motion.div>
           )}
-        </div>
-      </main>
-    </>
+      </div>
+    </OwnerShell>
   )
 }

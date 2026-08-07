@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   QrCode,
@@ -10,16 +9,14 @@ import {
   X,
   DollarSign,
   RefreshCw,
-  LogOut,
   Send,
   Calendar,
   Phone,
   User,
   ExternalLink,
-  ArrowLeft,
   Loader2,
 } from 'lucide-react'
-import Navbar from '@/components/layout/Navbar'
+import OwnerShell from '@/components/owner/OwnerShell'
 
 interface OwnerUser {
   id: string
@@ -195,51 +192,23 @@ export default function CobrancasDashboard({ user }: { user: OwnerUser }) {
   }
 
   return (
-    <>
-      <Navbar />
-
-      <main className="min-h-screen pt-32 pb-12 bg-gradient-to-br from-white via-bg-secondary/50 to-white">
-        <div className="container-custom max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-text-primary flex items-center gap-2">
-                <QrCode className="w-8 h-8 text-accent-primary" />
-                Cobranças
-              </h1>
-              <p className="text-text-secondary mt-1">Gere cobranças PIX para seus clientes</p>
-            </div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <a
-                href="/owner"
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Agendamentos
-              </a>
-              <a
-                href="/owner/financeiro"
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50"
-              >
-                <DollarSign className="w-4 h-4" />
-                Financeiro
-              </a>
-              <button
-                onClick={fetchAgendamentos}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Atualizar
-              </button>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 transition-colors border border-red-200 rounded-lg hover:bg-red-50"
-              >
-                <LogOut className="w-4 h-4" />
-                Sair
-              </button>
-            </div>
-          </div>
+    <OwnerShell title="Cobranças">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-text-primary flex items-center gap-2">
+            <QrCode className="w-7 h-7 text-accent-primary" />
+            Cobranças
+          </h1>
+          <p className="text-text-secondary mt-1">Gere cobranças PIX para seus clientes</p>
+        </div>
+        <button
+          onClick={fetchAgendamentos}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50 w-fit"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          Atualizar
+        </button>
+      </div>
 
           {/* Info Card */}
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
@@ -312,7 +281,6 @@ export default function CobrancasDashboard({ user }: { user: OwnerUser }) {
               ))}
             </div>
           )}
-        </div>
 
         {/* Modal de Cobrança */}
         <AnimatePresence>
@@ -505,7 +473,6 @@ export default function CobrancasDashboard({ user }: { user: OwnerUser }) {
             </motion.div>
           )}
         </AnimatePresence>
-      </main>
-    </>
+    </OwnerShell>
   )
 }

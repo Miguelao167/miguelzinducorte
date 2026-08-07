@@ -8,17 +8,14 @@ import {
   TrendingUp,
   Calendar,
   Wallet,
-  ArrowUpRight,
   Check,
   RefreshCw,
   LogOut,
-  X,
   QrCode,
-  ArrowLeft,
   CreditCard,
   Scissors,
 } from 'lucide-react'
-import Navbar from '@/components/layout/Navbar'
+import OwnerShell from '@/components/owner/OwnerShell'
 
 interface OwnerUser {
   id: string
@@ -153,60 +150,25 @@ export default function FinanceiroDashboard({ user }: { user: OwnerUser }) {
   const nomeMes = opcoesMeses.find(m => m.value === mesSelecionado)?.label || ''
 
   return (
-    <>
-      <Navbar />
-
-      <main className="min-h-screen pt-32 pb-12 bg-gradient-to-br from-white via-bg-secondary/50 to-white">
-        <div className="container-custom max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-text-primary flex items-center gap-2">
-                <DollarSign className="w-8 h-8 text-accent-primary" />
-                Financeiro
-              </h1>
-              <p className="text-text-secondary mt-1">
-                Acompanhe seu faturamento
-              </p>
-            </div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <a
-                href="/owner"
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Agendamentos
-              </a>
-              <a
-                href="/owner/cobrancas"
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-accent-primary hover:bg-accent-secondary rounded-lg transition-colors"
-              >
-                <QrCode className="w-4 h-4" />
-                Cobranças
-              </a>
-              <a
-                href="/owner/planos"
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50"
-              >
-                <Scissors className="w-4 h-4" />
-                Planos
-              </a>
-              <button
-                onClick={fetchData}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Atualizar
-              </button>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 transition-colors border border-red-200 rounded-lg hover:bg-red-50"
-              >
-                <LogOut className="w-4 h-4" />
-                Sair
-              </button>
-            </div>
-          </div>
+    <OwnerShell title="Financeiro">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-text-primary flex items-center gap-2">
+            <DollarSign className="w-7 h-7 text-accent-primary" />
+            Financeiro
+          </h1>
+          <p className="text-text-secondary mt-1">
+            Acompanhe seu faturamento
+          </p>
+        </div>
+        <button
+          onClick={fetchData}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50 w-fit"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          Atualizar
+        </button>
+      </div>
 
           {/* Cards de Resumo */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -430,8 +392,6 @@ export default function FinanceiroDashboard({ user }: { user: OwnerUser }) {
               </div>
             </div>
           )}
-        </div>
-      </main>
-    </>
+    </OwnerShell>
   )
 }
