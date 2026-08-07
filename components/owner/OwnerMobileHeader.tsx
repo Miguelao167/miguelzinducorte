@@ -14,7 +14,6 @@ const menuItems = [
   { href: '/owner/relatorios', label: 'Relatórios', icon: BarChart3 },
   { href: '/owner/clientes', label: 'Clientes', icon: Users },
   { href: '/owner/servicos', label: 'Serviços', icon: Scissors },
-  { href: '/owner/planos', label: 'Planos', icon: FileText },
   { href: '/owner/assinantes', label: 'Assinantes', icon: Users },
 ]
 
