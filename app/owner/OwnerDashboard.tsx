@@ -174,7 +174,7 @@ export default function OwnerDashboard({ user }: { user: OwnerUser }) {
       <Navbar />
 
       <main className="min-h-screen pt-32 pb-12 bg-gradient-to-br from-white via-bg-secondary/50 to-white">
-        <div className="container-custom max-w-7xl mx-auto">
+        <div className="max-w-screen-2xl mx-auto px-4 md:px-8">
           {/* Header */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
             <div className="flex-shrink-0">
