@@ -103,8 +103,38 @@ export async function POST(request: NextRequest) {
       const dataExpiracao = new Date(dataInicio)
       dataExpiracao.setDate(dataExpiracao.getDate() + plano.validadeDias)
 
-      // Cortes restantes: se já usou o corte do agendamento, desconta
-      const cortesRestantes = plano.numeroCortes - 1
+      // Define os serviços inclusos baseado no nome do plano
+      const planoNome = plano.nome.toLowerCase()
+      let servicosConfig: { tipo: string; limite: number }[] = [{ tipo: 'corte', limite: plano.numeroCortes }]
+
+      if (planoNome.includes('bronze')) {
+        servicosConfig = [
+          { tipo: 'corte', limite: 4 },
+          { tipo: 'barba', limite: 4 },
+        ]
+      } else if (planoNome.includes('prata')) {
+        servicosConfig = [
+          { tipo: 'corte', limite: 4 },
+          { tipo: 'sobrancelha', limite: 4 },
+        ]
+      } else if (planoNome.includes('ouro') || planoNome.includes('gold')) {
+        servicosConfig = [
+          { tipo: 'corte', limite: 999 },
+          { tipo: 'barba', limite: 4 },
+        ]
+      } else if (planoNome.includes('prime')) {
+        servicosConfig = [
+          { tipo: 'corte', limite: 999 },
+          { tipo: 'barba', limite: 999 },
+          { tipo: 'sobrancelha', limite: 999 },
+          { tipo: 'pigmentacao', limite: 4 },
+        ]
+      }
+
+      // Marca 1 corte como já usado (justamente o do agendamento)
+      servicosConfig = servicosConfig.map(s =>
+        s.tipo === 'corte' ? { ...s, limite: s.limite, usados: 1 } : s
+      )
 
       await prisma.assinatura.create({
         data: {
@@ -112,8 +142,15 @@ export async function POST(request: NextRequest) {
           planoId: plano.id,
           dataInicio,
           dataExpiracao,
-          cortesRestantes: cortesRestantes > 0 ? cortesRestantes : 0,
+          cortesRestantes: plano.numeroCortes >= 999 ? 999 : Math.max(0, plano.numeroCortes - 1),
           cortesUsados: 1,
+          servicos: {
+            create: servicosConfig.map(s => ({
+              tipo: s.tipo,
+              limite: s.limite,
+              usados: s.usados || 0,
+            }))
+          }
         }
       })
 

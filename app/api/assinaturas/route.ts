@@ -1,13 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// Configuração de serviços inclusos por plano
+function getServicosPlano(planoNome: string): { tipo: string; limite: number }[] {
+  const n = planoNome.toLowerCase()
+  if (n.includes('bronze')) {
+    return [
+      { tipo: 'corte', limite: 4 },
+      { tipo: 'barba', limite: 4 },
+    ]
+  }
+  if (n.includes('prata')) {
+    return [
+      { tipo: 'corte', limite: 4 },
+      { tipo: 'sobrancelha', limite: 4 },
+    ]
+  }
+  if (n.includes('ouro') || n.includes('gold')) {
+    return [
+      { tipo: 'corte', limite: 999 }, // ilimitado
+      { tipo: 'barba', limite: 4 },
+    ]
+  }
+  if (n.includes('prime')) {
+    return [
+      { tipo: 'corte', limite: 999 }, // ilimitado
+      { tipo: 'barba', limite: 999 }, // ilimitado
+      { tipo: 'sobrancelha', limite: 999 }, // ilimitado
+      { tipo: 'pigmentacao', limite: 4 },
+    ]
+  }
+  // padrão: só cortes
+  return [{ tipo: 'corte', limite: 4 }]
+}
+
 export async function GET() {
   try {
-    // Busca todas as assinaturas ativas ou não (pra mostrar tudo)
     const todas = await prisma.assinatura.findMany({
       include: {
         cliente: true,
         plano: true,
+        servicos: true,
       },
       orderBy: { dataExpiracao: 'asc' },
     })
@@ -22,34 +55,60 @@ export async function GET() {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json()
-    const { assinaturaId } = body
+    const { assinaturaId, tipo } = body
 
     if (!assinaturaId) {
       return NextResponse.json({ error: 'assinaturaId é obrigatório' }, { status: 400 })
     }
 
-    const assinatura = await prisma.assinatura.findUnique({ where: { id: assinaturaId } })
-    if (!assinatura) {
-      return NextResponse.json({ error: 'Assinatura não encontrada' }, { status: 404 })
+    if (!tipo) {
+      return NextResponse.json({ error: 'tipo de serviço é obrigatório' }, { status: 400 })
     }
 
-    if (assinatura.cortesRestantes <= 0) {
-      return NextResponse.json({ error: 'Sem cortes restantes' }, { status: 400 })
-    }
-
-    const atualizada = await prisma.assinatura.update({
-      where: { id: assinaturaId },
-      data: {
-        cortesRestantes: assinatura.cortesRestantes - 1,
-        cortesUsados: assinatura.cortesUsados + 1,
-      },
-      include: { cliente: true, plano: true },
+    // Busca o contador desse serviço
+    const contador = await prisma.servicoContador.findUnique({
+      where: { assinaturaId_tipo: { assinaturaId, tipo } }
     })
 
-    return NextResponse.json({ assinatura: atualizada })
+    if (!contador) {
+      return NextResponse.json({ error: `Serviço "${tipo}" não está incluído neste plano` }, { status: 400 })
+    }
+
+    if (contador.limite !== 999 && contador.usados >= contador.limite) {
+      return NextResponse.json({ error: `Sem ${tipo} restantes neste plano` }, { status: 400 })
+    }
+
+    // Incrementa o uso
+    await prisma.servicoContador.update({
+      where: { id: contador.id },
+      data: { usados: contador.usados + 1 }
+    })
+
+    // Mantém compatibilidade: também decrementa cortesRestantes se for corte
+    let atualizada
+    if (tipo === 'corte') {
+      const ass = await prisma.assinatura.findUnique({ where: { id: assinaturaId } })
+      if (ass) {
+        atualizada = await prisma.assinatura.update({
+          where: { id: assinaturaId },
+          data: {
+            cortesRestantes: Math.max(0, ass.cortesRestantes - 1),
+            cortesUsados: ass.cortesUsados + 1,
+          },
+          include: { cliente: true, plano: true, servicos: true },
+        })
+      }
+    }
+
+    const assinaturaFinal = await prisma.assinatura.findUnique({
+      where: { id: assinaturaId },
+      include: { cliente: true, plano: true, servicos: true }
+    })
+
+    return NextResponse.json({ assinatura: atualizada || assinaturaFinal })
   } catch (error) {
-    console.error('Erro ao registrar corte:', error)
-    return NextResponse.json({ error: 'Erro ao registrar corte' }, { status: 500 })
+    console.error('Erro ao registrar serviço:', error)
+    return NextResponse.json({ error: 'Erro ao registrar serviço' }, { status: 500 })
   }
 }
 
@@ -77,6 +136,8 @@ export async function POST(request: NextRequest) {
     const dataExpiracao = new Date()
     dataExpiracao.setDate(dataExpiracao.getDate() + plano.validadeDias)
 
+    const servicos = getServicosPlano(plano.nome)
+
     const assinatura = await prisma.assinatura.create({
       data: {
         clienteId,
@@ -84,8 +145,15 @@ export async function POST(request: NextRequest) {
         dataInicio,
         dataExpiracao,
         cortesRestantes: plano.numeroCortes,
+        servicos: {
+          create: servicos.map(s => ({
+            tipo: s.tipo,
+            limite: s.limite,
+            usados: 0,
+          }))
+        }
       },
-      include: { cliente: true, plano: true },
+      include: { cliente: true, plano: true, servicos: true },
     })
 
     return NextResponse.json({ assinatura })

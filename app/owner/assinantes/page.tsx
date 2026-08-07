@@ -16,6 +16,13 @@ import {
 } from 'lucide-react'
 import OwnerShell from '@/components/owner/OwnerShell'
 
+interface ServicoContador {
+  id: string
+  tipo: string
+  limite: number
+  usados: number
+}
+
 interface Assinatura {
   id: string
   dataInicio: string
@@ -25,6 +32,7 @@ interface Assinatura {
   ativa: boolean
   cliente: { id: string; nome: string; telefone: string }
   plano: { id: string; nome: string; preco: number; numeroCortes: number; validadeDias: number }
+  servicos?: ServicoContador[]
 }
 
 export default function AssinantesPage() {
@@ -59,21 +67,28 @@ export default function AssinantesPage() {
     router.refresh()
   }
 
-  const marcarCorte = async (assinaturaId: string, clienteNome: string) => {
-    setMarkingId(assinaturaId)
+  const marcarCorte = async (assinaturaId: string, clienteNome: string, tipo: string = 'corte') => {
+    setMarkingId(`${assinaturaId}-${tipo}`)
     try {
       const res = await fetch('/api/assinaturas', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assinaturaId }),
+        body: JSON.stringify({ assinaturaId, tipo }),
       })
       if (res.ok) {
-        setSuccessMsg(`Corte registrado para ${clienteNome}!`)
+        const labels: Record<string, string> = {
+          corte: 'Corte',
+          barba: 'Barba',
+          sobrancelha: 'Sobrancelha',
+          pigmentacao: 'Pigmentação',
+          pezinho: 'Pezinho',
+        }
+        setSuccessMsg(`${labels[tipo] || 'Serviço'} registrado para ${clienteNome}!`)
         setTimeout(() => setSuccessMsg(''), 3000)
         fetchAssinaturas()
       } else {
         const data = await res.json()
-        alert(data.error || 'Erro ao registrar corte')
+        alert(data.error || 'Erro ao registrar serviço')
       }
     } catch (err) {
       console.error(err)
@@ -151,9 +166,15 @@ export default function AssinantesPage() {
     a.plano.nome.toLowerCase().includes(search.toLowerCase())
   )
 
-  const totalCortes = assinaturas.reduce((sum, a) => sum + a.plano.numeroCortes, 0)
-  const totalUsados = assinaturas.reduce((sum, a) => sum + a.cortesUsados, 0)
-  const totalRestantes = assinaturas.reduce((sum, a) => sum + a.cortesRestantes, 0)
+  const totalCortes = assinaturas.reduce((sum, a) => {
+    const servicos = a.servicos || []
+    return sum + servicos.filter(s => s.tipo === 'corte').reduce((s2, sc) => s2 + sc.limite, 0)
+  }, 0)
+  const totalUsados = assinaturas.reduce((sum, a) => {
+    const servicos = a.servicos || []
+    return sum + servicos.filter(s => s.tipo === 'corte').reduce((s2, sc) => s2 + sc.usados, 0)
+  }, 0)
+  const totalRestantes = totalCortes >= 999 ? '∞' : (totalCortes - totalUsados)
 
   return (
     <OwnerShell title="Assinantes">
@@ -187,7 +208,7 @@ export default function AssinantesPage() {
           <div className="text-sm text-text-secondary">Assinantes Ativos</div>
         </div>
         <div className="bg-white rounded-2xl border border-accent-primary/10 p-4 text-center">
-          <div className="text-3xl font-bold text-green-600">{totalRestantes}</div>
+          <div className="text-3xl font-bold text-green-600">{typeof totalRestantes === 'string' ? totalRestantes : totalRestantes}</div>
           <div className="text-sm text-text-secondary">Cortes Restantes</div>
         </div>
         <div className="bg-white rounded-2xl border border-accent-primary/10 p-4 text-center">
@@ -195,7 +216,7 @@ export default function AssinantesPage() {
           <div className="text-sm text-text-secondary">Cortes Usados</div>
         </div>
         <div className="bg-white rounded-2xl border border-accent-primary/10 p-4 text-center">
-          <div className="text-3xl font-bold text-blue-600">{totalCortes}</div>
+          <div className="text-3xl font-bold text-blue-600">{typeof totalCortes === 'number' && totalCortes >= 999 ? '∞' : totalCortes}</div>
           <div className="text-sm text-text-secondary">Total de Cortes</div>
         </div>
       </div>
@@ -274,46 +295,61 @@ export default function AssinantesPage() {
                   </span>
                 </div>
 
-                {/* Serviços inclusos */}
+                {/* Serviços inclusos com marcação individual */}
                 <div className="mb-3 pb-3 border-b border-accent-primary/10">
                   <div className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
-                    Inclui
+                    Marcar uso
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {servicosDoPlano(a.plano.nome).map((s, idx) => (
-                      <span
-                        key={idx}
-                        className="text-xs px-2 py-1 rounded-full bg-accent-light/40 text-accent-primary font-medium"
-                      >
-                        {s}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                  <div className="space-y-2">
+                    {(a.servicos && a.servicos.length > 0
+                      ? a.servicos
+                      : [{ id: 'fallback', tipo: 'corte', limite: a.plano.numeroCortes, usados: a.cortesUsados }]
+                    ).map((s) => {
+                      const semLimite = s.limite >= 999
+                      const restantes = semLimite ? Infinity : s.limite - s.usados
+                      const esgotado = !semLimite && restantes <= 0
+                      const isMarking = markingId === `${a.id}-${s.tipo}`
 
-                {/* Cortes */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Scissors className="w-4 h-4 text-accent-primary" />
-                    <span className="text-sm text-text-secondary">Cortes restantes</span>
-                  </div>
-                  <span className={`text-lg font-bold ${semCortes ? 'text-red-600' : 'text-accent-primary'}`}>
-                    {a.cortesRestantes}/{a.plano.numeroCortes >= 999 ? '∞' : a.plano.numeroCortes}
-                  </span>
-                </div>
+                      const labels: Record<string, string> = {
+                        corte: 'Corte',
+                        barba: 'Barba',
+                        sobrancelha: 'Sobrancelha',
+                        pigmentacao: 'Pigmentação',
+                        pezinho: 'Pezinho',
+                      }
 
-                {/* Barra de progresso */}
-                <div className="w-full bg-gray-100 rounded-full h-2.5 mb-3 overflow-hidden">
-                  <div
-                    className={`h-2.5 rounded-full transition-all ${
-                      semCortes
-                        ? 'bg-red-400'
-                        : percentual <= 25
-                        ? 'bg-yellow-400'
-                        : 'bg-accent-primary'
-                    }`}
-                    style={{ width: `${percentual}%` }}
-                  />
+                      return (
+                        <div key={s.id} className="flex items-center gap-2">
+                          <div className="flex-1 flex items-center justify-between bg-bg-secondary rounded-lg px-3 py-2">
+                            <span className="text-sm font-medium text-text-primary">
+                              {labels[s.tipo] || s.tipo}
+                            </span>
+                            <span className={`text-sm font-bold ${esgotado ? 'text-red-600' : 'text-accent-primary'}`}>
+                              {s.usados}/{semLimite ? '∞' : s.limite}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => marcarCorte(a.id, a.cliente.nome, s.tipo)}
+                            disabled={isMarking || esgotado}
+                            className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-1 ${
+                              esgotado
+                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                : isMarking
+                                ? 'bg-accent-primary/50 text-white cursor-wait'
+                                : 'bg-accent-primary hover:bg-accent-secondary text-white active:scale-95'
+                            }`}
+                            title={esgotado ? 'Esgotado' : 'Marcar uso'}
+                          >
+                            {isMarking ? (
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <CheckCircle2 className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
 
                 {/* Validade */}
@@ -323,36 +359,6 @@ export default function AssinantesPage() {
                     {dias > 0 ? `Expira em ${dias} dia${dias !== 1 ? 's' : ''}` : 'Expirado'}
                   </span>
                 </div>
-
-                {/* Botão marcar corte */}
-                <button
-                  onClick={() => marcarCorte(a.id, a.cliente.nome)}
-                  disabled={markingId === a.id || semCortes}
-                  className={`w-full py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
-                    semCortes
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : markingId === a.id
-                      ? 'bg-accent-primary/50 text-white cursor-wait'
-                      : 'bg-accent-primary hover:bg-accent-secondary text-white active:scale-95'
-                  }`}
-                >
-                  {markingId === a.id ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      Registrando...
-                    </>
-                  ) : semCortes ? (
-                    <>
-                      <AlertCircle className="w-4 h-4" />
-                      Sem cortes restantes
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-4 h-4" />
-                      Marcar Corte
-                    </>
-                  )}
-                </button>
 
                 {/* Info extra */}
                 <div className="mt-3 pt-3 border-t border-accent-primary/5 text-xs text-text-muted flex justify-between">

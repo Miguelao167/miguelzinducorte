@@ -122,13 +122,55 @@ export async function POST(request: NextRequest) {
         const dataExpiracao = new Date()
         dataExpiracao.setDate(dataExpiracao.getDate() + plano.validadeDias)
 
+        // Define os serviços baseado no nome do plano
+        const planoNome = plano.nome.toLowerCase()
+        let servicosConfig: { tipo: string; limite: number }[] = [{ tipo: 'corte', limite: plano.numeroCortes }]
+
+        if (planoNome.includes('bronze')) {
+          servicosConfig = [
+            { tipo: 'corte', limite: 4 },
+            { tipo: 'barba', limite: 4 },
+          ]
+        } else if (planoNome.includes('prata')) {
+          servicosConfig = [
+            { tipo: 'corte', limite: 4 },
+            { tipo: 'sobrancelha', limite: 4 },
+          ]
+        } else if (planoNome.includes('ouro') || planoNome.includes('gold')) {
+          servicosConfig = [
+            { tipo: 'corte', limite: 999 },
+            { tipo: 'barba', limite: 4 },
+          ]
+        } else if (planoNome.includes('prime')) {
+          servicosConfig = [
+            { tipo: 'corte', limite: 999 },
+            { tipo: 'barba', limite: 999 },
+            { tipo: 'sobrancelha', limite: 999 },
+            { tipo: 'pigmentacao', limite: 4 },
+          ]
+        }
+
+        // Marca o corte do agendamento como já usado
+        servicosConfig = servicosConfig.map(s =>
+          s.tipo === 'corte' ? { ...s, limite: s.limite } : s
+        )
+
         await prisma.assinatura.create({
           data: {
             clienteId: cliente.id,
             planoId: plano.id,
             dataInicio,
             dataExpiracao,
-            cortesRestantes: plano.numeroCortes,
+            cortesRestantes: plano.numeroCortes >= 999 ? 999 : Math.max(0, plano.numeroCortes - 1),
+            cortesUsados: 1,
+            servicos: {
+              create: servicosConfig.map(s => ({
+                tipo: s.tipo,
+                limite: s.limite,
+                // marca 1 corte como usado (o que originou a assinatura)
+                usados: s.tipo === 'corte' ? 1 : 0,
+              }))
+            }
           }
         })
       }

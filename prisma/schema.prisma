@@ -118,7 +118,22 @@ model Assinatura {
   updatedAt       DateTime  @updatedAt
   cliente         Cliente   @relation(fields: [clienteId], references: [id], onDelete: Cascade)
   plano           Plano     @relation(fields: [planoId], references: [id])
+  servicos        ServicoContador[]
 
   @@index([clienteId])
   @@index([ativa])
+}
+
+model ServicoContador {
+  id            String     @id @default(cuid())
+  assinaturaId  String
+  tipo          String     // 'corte', 'barba', 'sobrancelha', 'pigmentacao', 'pezinho'
+  limite        Int        // 4, 999, etc. 999 = ilimitado
+  usados        Int        @default(0)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  assinatura    Assinatura @relation(fields: [assinaturaId], references: [id], onDelete: Cascade)
+
+  @@unique([assinaturaId, tipo])
+  @@index([assinaturaId])
 }
