@@ -223,16 +223,16 @@ export default function OwnerDashboard({ user }: { user: OwnerUser }) {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
               { label: 'Total', value: stats.total, color: 'text-text-primary' },
               { label: 'Pendentes', value: stats.pendente, color: 'text-yellow-600' },
               { label: 'Confirmados', value: stats.confirmado, color: 'text-green-600' },
               { label: 'Concluídos', value: stats.concluido, color: 'text-blue-600' },
             ].map((stat) => (
-              <div key={stat.label} className="bg-white rounded-xl p-4 border border-accent-primary/10 shadow-sm">
-                <div className={`text-2xl md:text-3xl font-bold ${stat.color}`}>{stat.value}</div>
-                <div className="text-sm text-text-secondary mt-1">{stat.label}</div>
+              <div key={stat.label} className="bg-white rounded-2xl p-6 md:p-8 border border-accent-primary/10 shadow-sm">
+                <div className={`text-4xl md:text-5xl font-bold ${stat.color}`}>{stat.value}</div>
+                <div className="text-base md:text-lg text-text-secondary mt-2 font-medium">{stat.label}</div>
               </div>
             ))}
           </div>
