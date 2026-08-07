@@ -15,6 +15,7 @@ const menuItems = [
   { href: '/owner/clientes', label: 'Clientes', icon: Users },
   { href: '/owner/servicos', label: 'Serviços', icon: Scissors },
   { href: '/owner/planos', label: 'Planos', icon: FileText },
+  { href: '/owner/assinantes', label: 'Assinantes', icon: Users },
 ]
 
 export default function OwnerMobileHeader({ title }: { title: string }) {
