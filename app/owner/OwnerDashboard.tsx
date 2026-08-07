@@ -18,6 +18,8 @@ import {
   DollarSign,
   CheckCircle2,
   XCircle,
+  Scissors,
+  CreditCard,
 } from 'lucide-react'
 import OwnerSidebar from '@/components/owner/OwnerSidebar'
 import OwnerMobileHeader from '@/components/owner/OwnerMobileHeader'
@@ -327,6 +329,17 @@ export default function OwnerDashboard({ user }: { user: OwnerUser }) {
                             <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${colors.bg} ${colors.text}`}>
                               {statusLabels[agendamento.status]}
                             </span>
+                            {agendamento.isPlano ? (
+                              <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 flex items-center gap-1">
+                                <CreditCard className="w-3 h-3" />
+                                Plano
+                              </span>
+                            ) : agendamento.servico ? (
+                              <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800 flex items-center gap-1">
+                                <Scissors className="w-3 h-3" />
+                                Serviço
+                              </span>
+                            ) : null}
                             {agendamento.servico && (
                               <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-accent-light/50 text-accent-primary">
                                 {agendamento.servico}
