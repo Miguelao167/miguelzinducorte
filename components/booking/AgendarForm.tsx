@@ -126,6 +126,7 @@ export default function AgendarForm() {
         throw new Error(data.error || 'Erro ao salvar')
       }
 
+      setLoading(false)
       setSubmitted(true)
     } catch (err: any) {
       setError(err.message || 'Erro ao processar agendamento.')
@@ -167,10 +168,48 @@ export default function AgendarForm() {
             </p>
           )}
 
-          <form
-            onSubmit={handleSubmit}
-            className="p-8 md:p-10 rounded-3xl bg-white border border-accent-primary/15 shadow-card-light space-y-6"
-          >
+          {submitted ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="p-10 rounded-3xl bg-white border border-green-200 shadow-card-light text-center space-y-6"
+            >
+              <div className="w-16 h-16 mx-auto rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle2 className="w-10 h-10 text-green-600" />
+              </div>
+              <div>
+                <h2 className="font-display text-2xl md:text-3xl font-bold text-text-primary mb-2">
+                  Agendamento confirmado!
+                </h2>
+                <p className="text-text-secondary">
+                  Entraremos em contato pelo WhatsApp para confirmar o horário.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
+                <Link
+                  href="/"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-accent-primary text-white font-semibold hover:bg-accent-secondary transition-colors"
+                >
+                  Voltar para o site
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSubmitted(false)
+                    setFormData({ nomeCliente: '', telefone: '', data: '', horario: '', observacoes: '' })
+                    setError('')
+                  }}
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-accent-primary/20 text-text-secondary font-semibold hover:bg-accent-light/50 transition-colors"
+                >
+                  Fazer outro agendamento
+                </button>
+              </div>
+            </motion.div>
+          ) : (
+            <form
+              onSubmit={handleSubmit}
+              className="p-8 md:p-10 rounded-3xl bg-white border border-accent-primary/15 shadow-card-light space-y-6"
+            >
             {error && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -179,17 +218,6 @@ export default function AgendarForm() {
               >
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 {error}
-              </motion.div>
-            )}
-
-            {submitted && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="flex items-center gap-2 p-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm"
-              >
-                <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                Agendamento confirmado com sucesso! Entraremos em contato pelo WhatsApp.
               </motion.div>
             )}
 
@@ -357,6 +385,7 @@ export default function AgendarForm() {
               )}
             </Button>
           </form>
+          )}
         </motion.div>
       </div>
     </section>
