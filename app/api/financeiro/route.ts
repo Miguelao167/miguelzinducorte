@@ -68,6 +68,52 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Auto-criar assinatura: tenta achar um plano com o mesmo nome do servico
+    if (agendamento.servico) {
+      const plano = await prisma.plano.findFirst({
+        where: { nome: { equals: agendamento.servico, mode: 'insensitive' } }
+      })
+
+      if (plano) {
+        const telefoneLimpo = agendamento.telefone.replace(/\D/g, '')
+
+        // Garante que o cliente existe
+        let cliente = await prisma.cliente.findUnique({
+          where: { telefone: telefoneLimpo }
+        })
+
+        if (!cliente) {
+          cliente = await prisma.cliente.create({
+            data: {
+              nome: agendamento.nomeCliente,
+              telefone: telefoneLimpo,
+            }
+          })
+        }
+
+        // Desativa assinaturas anteriores ativas do mesmo cliente
+        await prisma.assinatura.updateMany({
+          where: { clienteId: cliente.id, ativa: true },
+          data: { ativa: false },
+        })
+
+        // Cria a nova assinatura
+        const dataInicio = new Date()
+        const dataExpiracao = new Date()
+        dataExpiracao.setDate(dataExpiracao.getDate() + plano.validadeDias)
+
+        await prisma.assinatura.create({
+          data: {
+            clienteId: cliente.id,
+            planoId: plano.id,
+            dataInicio,
+            dataExpiracao,
+            cortesRestantes: plano.numeroCortes,
+          }
+        })
+      }
+    }
+
     return NextResponse.json(agendamento)
   } catch (error) {
     console.error('Erro ao marcar como pago:', error)
