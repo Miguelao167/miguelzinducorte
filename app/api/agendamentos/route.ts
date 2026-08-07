@@ -31,8 +31,7 @@ export async function POST(request: NextRequest) {
       preco,
       dataPreferida,
       horario,
-      observacoes,
-      planoId
+      observacoes
     } = body
 
     if (!nomeCliente || !telefone) {
@@ -77,7 +76,6 @@ export async function POST(request: NextRequest) {
         horario: horario || null,
         observacoes: observacoes || null,
         clienteId: clienteId || null,
-        planoId: planoId || null,
         status: 'pendente'
       }
     })

@@ -44,22 +44,6 @@ export default function AgendarForm() {
   const [horariosDisponiveis, setHorariosDisponiveis] = useState<string[]>([])
   const [horariosOcupados, setHorariosOcupados] = useState<string[]>([])
   const [carregandoHorarios, setCarregandoHorarios] = useState(false)
-  const [planoId, setPlanoId] = useState<string | null>(null)
-
-  // Se for plano, busca o id pelo nome pra vincular
-  useEffect(() => {
-    if (tipo === 'plano' && nome) {
-      fetch('/api/planos')
-        .then(r => r.json())
-        .then(data => {
-          const plano = (data.planos || []).find(
-            (p: any) => p.nome.toLowerCase() === nome.toLowerCase()
-          )
-          if (plano) setPlanoId(plano.id)
-        })
-        .catch(() => {})
-    }
-  }, [tipo, nome])
 
   // Quando mudar a data, gerar lista de horários
   useEffect(() => {
@@ -134,7 +118,6 @@ export default function AgendarForm() {
           dataPreferida: formData.data || null,
           horario: formData.horario || null,
           observacoes: formData.observacoes || null,
-          planoId: planoId || null,
         }),
       })
 
