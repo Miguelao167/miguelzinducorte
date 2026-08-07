@@ -94,3 +94,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Erro ao criar assinatura' }, { status: 500 })
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { assinaturaId } = body
+
+    if (!assinaturaId) {
+      return NextResponse.json({ error: 'assinaturaId é obrigatório' }, { status: 400 })
+    }
+
+    await prisma.assinatura.delete({
+      where: { id: assinaturaId },
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Erro ao excluir assinatura:', error)
+    return NextResponse.json({ error: 'Erro ao excluir assinatura' }, { status: 500 })
+  }
+}

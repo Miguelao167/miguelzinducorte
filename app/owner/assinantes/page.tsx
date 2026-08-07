@@ -12,6 +12,7 @@ import {
   RefreshCw,
   Search,
   AlertCircle,
+  Trash2,
 } from 'lucide-react'
 import OwnerShell from '@/components/owner/OwnerShell'
 
@@ -96,6 +97,28 @@ export default function AssinantesPage() {
     } catch (err) {
       console.error(err)
       alert('Erro ao importar')
+    }
+  }
+
+  const excluirAssinatura = async (assinaturaId: string, clienteNome: string) => {
+    if (!confirm(`Excluir a assinatura de ${clienteNome}? Esta ação não pode ser desfeita.`)) return
+    try {
+      const res = await fetch('/api/assinaturas', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assinaturaId }),
+      })
+      if (res.ok) {
+        setSuccessMsg(`Assinatura de ${clienteNome} excluída!`)
+        setTimeout(() => setSuccessMsg(''), 3000)
+        fetchAssinaturas()
+      } else {
+        const data = await res.json()
+        alert(data.error || 'Erro ao excluir')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Erro ao excluir')
     }
   }
 
@@ -309,6 +332,15 @@ export default function AssinantesPage() {
                   <span>Válido até {formatDate(a.dataExpiracao)}</span>
                   <span>{formatCurrency(a.plano.preco)}</span>
                 </div>
+
+                {/* Botão excluir */}
+                <button
+                  onClick={() => excluirAssinatura(a.id, a.cliente.nome)}
+                  className="mt-3 w-full py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center gap-2 border border-red-200"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Excluir Assinatura
+                </button>
               </motion.div>
             )
           })}
