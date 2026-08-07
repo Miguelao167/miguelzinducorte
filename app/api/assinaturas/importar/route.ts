@@ -109,25 +109,25 @@ export async function POST(request: NextRequest) {
 
       if (planoNome.includes('bronze')) {
         servicosConfig = [
-          { tipo: 'corte', limite: 4 },
-          { tipo: 'barba', limite: 4 },
+          { tipo: 'corte', limite: 4, usados: 0 },
+          { tipo: 'barba', limite: 4, usados: 0 },
         ]
       } else if (planoNome.includes('prata')) {
         servicosConfig = [
-          { tipo: 'corte', limite: 4 },
-          { tipo: 'sobrancelha', limite: 4 },
+          { tipo: 'corte', limite: 4, usados: 0 },
+          { tipo: 'sobrancelha', limite: 4, usados: 0 },
         ]
       } else if (planoNome.includes('ouro') || planoNome.includes('gold')) {
         servicosConfig = [
-          { tipo: 'corte', limite: 999 },
-          { tipo: 'barba', limite: 4 },
+          { tipo: 'corte', limite: 999, usados: 0 },
+          { tipo: 'barba', limite: 4, usados: 0 },
         ]
       } else if (planoNome.includes('prime')) {
         servicosConfig = [
-          { tipo: 'corte', limite: 999 },
-          { tipo: 'barba', limite: 999 },
-          { tipo: 'sobrancelha', limite: 999 },
-          { tipo: 'pigmentacao', limite: 4 },
+          { tipo: 'corte', limite: 999, usados: 0 },
+          { tipo: 'barba', limite: 999, usados: 0 },
+          { tipo: 'sobrancelha', limite: 999, usados: 0 },
+          { tipo: 'pigmentacao', limite: 4, usados: 0 },
         ]
       }
 
