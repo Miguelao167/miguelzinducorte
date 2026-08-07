@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
 
       // Define os serviços inclusos baseado no nome do plano
       const planoNome = plano.nome.toLowerCase()
-      let servicosConfig: { tipo: string; limite: number }[] = [{ tipo: 'corte', limite: plano.numeroCortes }]
+      let servicosConfig: { tipo: string; limite: number; usados: number }[] = [{ tipo: 'corte', limite: plano.numeroCortes, usados: 0 }]
 
       if (planoNome.includes('bronze')) {
         servicosConfig = [
