@@ -135,6 +135,16 @@ export default function AssinantesPage() {
     return diff
   }
 
+  // Mapeia o nome do plano pra lista de serviços incluídos
+  const servicosDoPlano = (nomePlano: string): string[] => {
+    const n = nomePlano.toLowerCase()
+    if (n.includes('bronze')) return ['4 Cortes', 'ou 4 Barbas']
+    if (n.includes('prata')) return ['4 Cortes', '4 Sobrancelhas']
+    if (n.includes('ouro') || n.includes('gold')) return ['Cortes ilimitados', '4 Barbas']
+    if (n.includes('prime')) return ['Cortes ilimitados', 'Barbas ilimitadas', 'Sobrancelhas', 'Pigmentação', 'Pezinho']
+    return []
+  }
+
   const filtered = assinaturas.filter((a) =>
     a.cliente.nome.toLowerCase().includes(search.toLowerCase()) ||
     a.cliente.telefone.includes(search) ||
@@ -264,14 +274,31 @@ export default function AssinantesPage() {
                   </span>
                 </div>
 
+                {/* Serviços inclusos */}
+                <div className="mb-3 pb-3 border-b border-accent-primary/10">
+                  <div className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
+                    Inclui
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {servicosDoPlano(a.plano.nome).map((s, idx) => (
+                      <span
+                        key={idx}
+                        className="text-xs px-2 py-1 rounded-full bg-accent-light/40 text-accent-primary font-medium"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Cortes */}
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Scissors className="w-4 h-4 text-accent-primary" />
-                    <span className="text-sm text-text-secondary">Cortes</span>
+                    <span className="text-sm text-text-secondary">Cortes restantes</span>
                   </div>
                   <span className={`text-lg font-bold ${semCortes ? 'text-red-600' : 'text-accent-primary'}`}>
-                    {a.cortesRestantes}/{a.plano.numeroCortes}
+                    {a.cortesRestantes}/{a.plano.numeroCortes >= 999 ? '∞' : a.plano.numeroCortes}
                   </span>
                 </div>
 
