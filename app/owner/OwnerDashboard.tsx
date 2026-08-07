@@ -230,9 +230,9 @@ export default function OwnerDashboard({ user }: { user: OwnerUser }) {
               { label: 'Confirmados', value: stats.confirmado, color: 'text-green-600' },
               { label: 'Concluídos', value: stats.concluido, color: 'text-blue-600' },
             ].map((stat) => (
-              <div key={stat.label} className="bg-white rounded-xl p-4 border border-accent-primary/10 shadow-sm min-w-0">
-                <div className={`text-3xl font-bold ${stat.color}`}>{stat.value}</div>
-                <div className="text-sm text-text-secondary truncate">{stat.label}</div>
+              <div key={stat.label} className="bg-white rounded-xl p-4 border border-accent-primary/10 shadow-sm">
+                <div className={`text-2xl md:text-3xl font-bold ${stat.color}`}>{stat.value}</div>
+                <div className="text-sm text-text-secondary mt-1">{stat.label}</div>
               </div>
             ))}
           </div>
