@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
+  Scissors,
 } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import GlowText from '@/components/ui/GlowText'
@@ -30,6 +31,8 @@ export default function AgendarForm() {
   const tipo = searchParams.get('tipo') === 'plano' ? 'plano' : 'servico'
   const nome = searchParams.get('nome') || ''
   const preco = searchParams.get('preco') || ''
+  const cortes = searchParams.get('cortes') || ''
+  const desc = searchParams.get('desc') || ''
 
   const [formData, setFormData] = useState({
     nomeCliente: '',
@@ -159,21 +162,29 @@ export default function AgendarForm() {
           </h1>
 
           {nome ? (
-            <p className="text-text-secondary text-lg mb-10">
-              Você está agendando:{' '}
-              {tipo === 'plano' && (
-                <span className="inline-block px-3 py-1 mr-2 rounded-full bg-yellow-100 text-yellow-800 text-sm font-semibold">
-                  Plano
-                </span>
+            <div className="mb-10">
+              <p className="text-text-secondary text-lg">
+                Você está agendando:{' '}
+                {tipo === 'plano' && (
+                  <span className="inline-block px-3 py-1 mr-2 rounded-full bg-yellow-100 text-yellow-800 text-sm font-semibold">
+                    Plano
+                  </span>
+                )}
+                {tipo === 'servico' && (
+                  <span className="inline-block px-3 py-1 mr-2 rounded-full bg-blue-100 text-blue-800 text-sm font-semibold">
+                    Serviço
+                  </span>
+                )}
+                <span className="font-semibold text-text-primary">{nome}</span>
+                {preco && <span className="text-accent-primary font-semibold"> — R$ {preco}</span>}
+              </p>
+              {tipo === 'plano' && desc && (
+                <p className="text-text-muted text-sm mt-2 flex items-center gap-2">
+                  <Scissors className="w-4 h-4" />
+                  {desc}
+                </p>
               )}
-              {tipo === 'servico' && (
-                <span className="inline-block px-3 py-1 mr-2 rounded-full bg-blue-100 text-blue-800 text-sm font-semibold">
-                  Serviço
-                </span>
-              )}
-              <span className="font-semibold text-text-primary">{nome}</span>
-              {preco && <span className="text-accent-primary font-semibold"> — R$ {preco}</span>}
-            </p>
+            </div>
           ) : (
             <p className="text-text-secondary text-lg mb-10">
               Preencha seus dados e escolha um horário disponível.

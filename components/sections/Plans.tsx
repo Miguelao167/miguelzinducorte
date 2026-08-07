@@ -74,19 +74,23 @@ export default function Plans() {
               </div>
               <span className="text-text-muted text-sm mb-6">/mês</span>
 
-              <div className="flex items-start gap-3 mb-6 flex-1">
-                <div className="w-5 h-5 rounded-full bg-accent-primary/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Check className="w-3 h-3 text-accent-primary" />
-                </div>
-                <span className="text-text-secondary text-sm leading-relaxed">
-                  {plan.description}
-                </span>
+              <div className="space-y-2 mb-6 flex-1">
+                {plan.inclui.map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full bg-accent-primary/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-accent-primary" />
+                    </div>
+                    <span className="text-text-secondary text-sm leading-relaxed">
+                      {item}
+                    </span>
+                  </div>
+                ))}
               </div>
 
               <p className="text-text-muted text-xs mb-6">{plan.validity}</p>
 
               <Link
-                href={`/agendar?tipo=plano&nome=${encodeURIComponent(plan.name)}&preco=${plan.price}`}
+                href={`/agendar?tipo=plano&nome=${encodeURIComponent(plan.name)}&preco=${plan.price}&cortes=${plan.numeroCortes}&desc=${encodeURIComponent(plan.description)}`}
                 className={`inline-flex items-center justify-center w-full px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-300 ${
                   plan.popular ? 'btn-primary' : 'btn-secondary'
                 }`}

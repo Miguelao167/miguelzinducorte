@@ -23,6 +23,9 @@ export const PLANS = [
     price: 84.9,
     description: '4 cortes ou 4 barbas',
     validity: 'Válido por 30 dias',
+    numeroCortes: 4,
+    inclui: ['4 Cortes', 'OU 4 Barbas'],
+    tipo: 'basico',
   },
   {
     id: 2,
@@ -30,6 +33,9 @@ export const PLANS = [
     price: 109.9,
     description: '4 cortes e 4 sobrancelhas',
     validity: 'Válido por 30 dias',
+    numeroCortes: 4,
+    inclui: ['4 Cortes', '4 Sobrancelhas'],
+    tipo: 'intermediario',
   },
   {
     id: 3,
@@ -38,6 +44,9 @@ export const PLANS = [
     description: 'Cortes ilimitados e 4 barbas',
     validity: 'Válido por 30 dias',
     popular: true,
+    numeroCortes: 999, // ilimitado
+    inclui: ['Cortes ilimitados', '4 Barbas'],
+    tipo: 'premium',
   },
   {
     id: 4,
@@ -45,6 +54,9 @@ export const PLANS = [
     price: 159.9,
     description: 'Cortes ilimitados, barbas ilimitadas e serviços extras',
     validity: 'Válido por 30 dias',
+    numeroCortes: 999, // ilimitado
+    inclui: ['Cortes ilimitados', 'Barbas ilimitadas', 'Sobrancelhas', 'Pigmentação', 'Pezinho'],
+    tipo: 'vip',
   },
 ]
 
