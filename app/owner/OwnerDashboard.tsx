@@ -173,64 +173,66 @@ export default function OwnerDashboard({ user }: { user: OwnerUser }) {
     <>
       <Navbar />
 
-      <main className="min-h-screen pt-24 pb-12 bg-gradient-to-br from-white via-bg-secondary/50 to-white">
-        <div className="container-custom max-w-6xl mx-auto">
+      <main className="min-h-screen pt-32 pb-12 bg-gradient-to-br from-white via-bg-secondary/50 to-white">
+        <div className="container-custom max-w-7xl mx-auto">
           {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-text-primary">Painel de Agendamentos</h1>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+            <div className="flex-shrink-0">
+              <h1 className="text-2xl md:text-3xl font-bold text-text-primary whitespace-nowrap">
+                Painel de Agendamentos
+              </h1>
               <p className="text-text-secondary mt-1">
                 Olá, {user.name || user.email}! Gerencie os agendamentos da barbearia.
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 flex-wrap">
               <a
                 href="/owner/financeiro"
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-accent-primary hover:bg-accent-secondary rounded-lg transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-accent-primary hover:bg-accent-secondary rounded-lg transition-colors whitespace-nowrap"
               >
                 <DollarSign className="w-4 h-4" />
                 Financeiro
               </a>
               <a
                 href="/owner/cobrancas"
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50 whitespace-nowrap"
               >
                 Cobranças
               </a>
               <a
                 href="/owner/configuracoes"
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50"
+                className="hidden md:flex items-center gap-2 px-3 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50 whitespace-nowrap"
               >
                 Configurações
               </a>
               <button
                 onClick={fetchAgendamentos}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50 whitespace-nowrap"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Atualizar
+                <span className="hidden sm:inline">Atualizar</span>
               </button>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 transition-colors border border-red-200 rounded-lg hover:bg-red-50"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 hover:text-red-700 transition-colors border border-red-200 rounded-lg hover:bg-red-50 whitespace-nowrap"
               >
                 <LogOut className="w-4 h-4" />
-                Sair
+                <span className="hidden sm:inline">Sair</span>
               </button>
             </div>
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
             {[
               { label: 'Total', value: stats.total, color: 'text-text-primary' },
               { label: 'Pendentes', value: stats.pendente, color: 'text-yellow-600' },
               { label: 'Confirmados', value: stats.confirmado, color: 'text-green-600' },
               { label: 'Concluídos', value: stats.concluido, color: 'text-blue-600' },
             ].map((stat) => (
-              <div key={stat.label} className="bg-white rounded-xl p-4 border border-accent-primary/10 shadow-sm">
+              <div key={stat.label} className="bg-white rounded-xl p-4 border border-accent-primary/10 shadow-sm min-w-0">
                 <div className={`text-3xl font-bold ${stat.color}`}>{stat.value}</div>
-                <div className="text-sm text-text-secondary">{stat.label}</div>
+                <div className="text-sm text-text-secondary truncate">{stat.label}</div>
               </div>
             ))}
           </div>

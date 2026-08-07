@@ -198,7 +198,7 @@ export default function CobrancasDashboard({ user }: { user: OwnerUser }) {
     <>
       <Navbar />
 
-      <main className="min-h-screen pt-24 pb-12 bg-gradient-to-br from-white via-bg-secondary/50 to-white">
+      <main className="min-h-screen pt-32 pb-12 bg-gradient-to-br from-white via-bg-secondary/50 to-white">
         <div className="container-custom max-w-6xl mx-auto">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
