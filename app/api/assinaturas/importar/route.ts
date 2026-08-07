@@ -16,8 +16,8 @@ export async function POST(request: NextRequest) {
       orderBy: { createdAt: 'desc' }
     })
 
-    // Busca todos os planos ativos pra fazer o match
-    const planos = await prisma.plano.findMany({ where: { ativo: true } })
+    // Busca todos os planos pra fazer o match (ativos ou não, pra não perder dados)
+    const planos = await prisma.plano.findMany()
 
     if (planos.length === 0) {
       return NextResponse.json({ error: 'Nenhum plano cadastrado. Crie um plano antes.' }, { status: 400 })

@@ -76,13 +76,12 @@ export async function POST(request: NextRequest) {
       let plano = servicoNome ? await prisma.plano.findFirst({
         where: {
           nome: { equals: servicoNome, mode: 'insensitive' },
-          ativo: true
         }
       }) : null
 
       // Se não achou e é plano, tenta match pelo preco ou pega o primeiro plano ativo
       if (!plano && agendamento.isPlano) {
-        const todosPlanos = await prisma.plano.findMany({ where: { ativo: true } })
+        const todosPlanos = await prisma.plano.findMany()
         plano = todosPlanos.find(p =>
           servicoNome && (
             servicoNome.toLowerCase().includes(p.nome.toLowerCase()) ||
