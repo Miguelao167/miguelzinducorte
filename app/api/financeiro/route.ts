@@ -79,19 +79,21 @@ export async function POST(request: NextRequest) {
         }
       }) : null
 
-      // Se não achou e é plano, tenta match pelo preco ou pega o primeiro plano ativo
-      if (!plano && agendamento.isPlano) {
-        const todosPlanos = await prisma.plano.findMany()
-        plano = todosPlanos.find(p =>
-          servicoNome && (
-            servicoNome.toLowerCase().includes(p.nome.toLowerCase()) ||
-            p.nome.toLowerCase().includes(servicoNome.toLowerCase())
-          )
-        ) || null
-        // Se ainda não achou, usa o primeiro plano (só se for explicitamente plano)
-        if (!plano && todosPlanos.length === 1) {
-          plano = todosPlanos[0]
-        }
+      // Se não achou, tenta match contém
+      if (!plano && servicoNome) {
+        const todos = await prisma.plano.findMany()
+        plano = todos.find(p => {
+          const pNome = p.nome.toLowerCase()
+          const sNome = servicoNome.toLowerCase()
+          if (pNome.includes('importado') || pNome.includes('geral')) return false
+          return sNome.includes(pNome) || pNome.includes(sNome)
+        }) || null
+      }
+
+      // Pula se não é explicitamente um plano e não achou
+      if (!plano) {
+        console.log('[PAGAMENTO] Plano não encontrado para servico:', servicoNome)
+        return NextResponse.json(agendamento)
       }
 
       if (plano) {
