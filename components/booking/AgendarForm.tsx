@@ -160,7 +160,18 @@ export default function AgendarForm() {
 
           {nome ? (
             <p className="text-text-secondary text-lg mb-10">
-              Você está agendando: <span className="font-semibold text-text-primary">{nome}</span>
+              Você está agendando:{' '}
+              {tipo === 'plano' && (
+                <span className="inline-block px-3 py-1 mr-2 rounded-full bg-yellow-100 text-yellow-800 text-sm font-semibold">
+                  Plano
+                </span>
+              )}
+              {tipo === 'servico' && (
+                <span className="inline-block px-3 py-1 mr-2 rounded-full bg-blue-100 text-blue-800 text-sm font-semibold">
+                  Serviço
+                </span>
+              )}
+              <span className="font-semibold text-text-primary">{nome}</span>
               {preco && <span className="text-accent-primary font-semibold"> — R$ {preco}</span>}
             </p>
           ) : (
