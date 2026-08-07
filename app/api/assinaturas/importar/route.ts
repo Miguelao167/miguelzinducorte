@@ -19,8 +19,17 @@ export async function POST(request: NextRequest) {
     // Busca todos os planos pra fazer o match (ativos ou não, pra não perder dados)
     const planos = await prisma.plano.findMany()
 
+    // Se não tem plano, cria um genérico automaticamente
     if (planos.length === 0) {
-      return NextResponse.json({ error: 'Nenhum plano cadastrado. Crie um plano antes.' }, { status: 400 })
+      const novoPlano = await prisma.plano.create({
+        data: {
+          nome: 'Plano Importado',
+          preco: 0,
+          numeroCortes: 4,
+          validadeDias: 30,
+        }
+      })
+      planos.push(novoPlano)
     }
 
     let criadas = 0
