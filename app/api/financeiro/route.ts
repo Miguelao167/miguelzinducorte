@@ -68,11 +68,32 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Auto-criar assinatura: tenta achar um plano com o mesmo nome do servico
-    if (agendamento.servico) {
-      const plano = await prisma.plano.findFirst({
-        where: { nome: { equals: agendamento.servico, mode: 'insensitive' } }
-      })
+    // Auto-criar assinatura: tenta achar um plano pelo nome do servico
+    if (agendamento.servico || agendamento.isPlano) {
+      const servicoNome = (agendamento.servico || '').trim()
+
+      // Tenta match exato primeiro (case-insensitive)
+      let plano = servicoNome ? await prisma.plano.findFirst({
+        where: {
+          nome: { equals: servicoNome, mode: 'insensitive' },
+          ativo: true
+        }
+      }) : null
+
+      // Se não achou e é plano, tenta match pelo preco ou pega o primeiro plano ativo
+      if (!plano && agendamento.isPlano) {
+        const todosPlanos = await prisma.plano.findMany({ where: { ativo: true } })
+        plano = todosPlanos.find(p =>
+          servicoNome && (
+            servicoNome.toLowerCase().includes(p.nome.toLowerCase()) ||
+            p.nome.toLowerCase().includes(servicoNome.toLowerCase())
+          )
+        ) || null
+        // Se ainda não achou, usa o primeiro plano (só se for explicitamente plano)
+        if (!plano && todosPlanos.length === 1) {
+          plano = todosPlanos[0]
+        }
+      }
 
       if (plano) {
         const telefoneLimpo = agendamento.telefone.replace(/\D/g, '')

@@ -33,12 +33,14 @@ model Agendamento {
   metodoPagamento String?
   clienteId       String?
   cliente         Cliente? @relation(fields: [clienteId], references: [id])
+  isPlano         Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   @@index([dataPreferida])
   @@index([status])
   @@index([clienteId])
+  @@index([isPlano])
 }
 
 model Saque {

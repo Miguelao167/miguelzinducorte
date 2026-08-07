@@ -40,6 +40,7 @@ interface Agendamento {
   status: string
   pago: boolean
   valorPago: number | null
+  isPlano?: boolean
   createdAt: string
 }
 

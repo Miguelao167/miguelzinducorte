@@ -118,6 +118,7 @@ export default function AgendarForm() {
           dataPreferida: formData.data || null,
           horario: formData.horario || null,
           observacoes: formData.observacoes || null,
+          isPlano: tipo === 'plano',
         }),
       })
 
