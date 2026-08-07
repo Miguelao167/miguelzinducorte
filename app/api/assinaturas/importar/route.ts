@@ -45,29 +45,36 @@ export async function POST(request: NextRequest) {
       let plano = null
       const servicoNome = (ag.servico || '').trim().toLowerCase()
 
+      console.log('[IMPORTAR] Agendamento:', { id: ag.id, servico: ag.servico, isPlano: ag.isPlano })
+
       if (servicoNome) {
         // Match exato (prioridade)
         plano = planos.find(p => p.nome.toLowerCase() === servicoNome)
-        // Match contém
-        if (!plano) {
-          plano = planos.find(p =>
-            p.nome.toLowerCase().includes(servicoNome) ||
-            servicoNome.includes(p.nome.toLowerCase())
-          )
-        }
+        if (plano) console.log('[IMPORTAR] Match exato:', plano.nome)
+      }
+
+      // Match contém (só se nome do plano não é genérico)
+      if (!plano && servicoNome) {
+        plano = planos.find(p => {
+          const pNome = p.nome.toLowerCase()
+          // Evita match com nomes genéricos tipo "Plano Importado"
+          if (pNome.includes('importado') || pNome.includes('geral')) return false
+          return servicoNome.includes(pNome) || pNome.includes(servicoNome)
+        })
+        if (plano) console.log('[IMPORTAR] Match contém:', plano.nome)
       }
 
       // Se é plano e tem só 1 plano cadastrado, usa ele
       if (!plano && ag.isPlano && planos.length === 1) {
         plano = planos[0]
+        console.log('[IMPORTAR] Único plano:', plano.nome)
       }
 
-      // Só pega o primeiro plano como último recurso se realmente for explicitamente um plano
-      if (!plano && ag.isPlano) {
-        plano = planos[0]
+      // Pula se não é explicitamente um plano e não achou match
+      if (!plano) {
+        console.log('[IMPORTAR] Pulei - não é plano ou não achou match')
+        continue
       }
-
-      if (!plano) continue
 
       // Garante que o cliente existe
       const telefoneLimpo = ag.telefone.replace(/\D/g, '')
