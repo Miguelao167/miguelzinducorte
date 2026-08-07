@@ -68,12 +68,18 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Auto-criar assinatura: tenta achar um plano com o mesmo nome do servico
-    if (agendamento.servico) {
+    // Auto-criar assinatura: usa planoId do agendamento OU tenta pelo nome do servico
+    let planoId = agendamento.planoId
+
+    if (!planoId && agendamento.servico) {
       const plano = await prisma.plano.findFirst({
         where: { nome: { equals: agendamento.servico, mode: 'insensitive' } }
       })
+      if (plano) planoId = plano.id
+    }
 
+    if (planoId) {
+      const plano = await prisma.plano.findUnique({ where: { id: planoId } })
       if (plano) {
         const telefoneLimpo = agendamento.telefone.replace(/\D/g, '')
 

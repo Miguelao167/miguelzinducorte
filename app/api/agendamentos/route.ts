@@ -31,7 +31,8 @@ export async function POST(request: NextRequest) {
       preco,
       dataPreferida,
       horario,
-      observacoes
+      observacoes,
+      planoId
     } = body
 
     if (!nomeCliente || !telefone) {
@@ -49,13 +50,15 @@ export async function POST(request: NextRequest) {
       where: { telefone: telefoneLimpo }
     })
 
+    let clienteId = clienteExistente?.id
     if (!clienteExistente) {
-      await prisma.cliente.create({
+      const novo = await prisma.cliente.create({
         data: {
           nome: nomeCliente,
           telefone: telefoneLimpo,
         }
       })
+      clienteId = novo.id
     } else if (clienteExistente.nome !== nomeCliente) {
       // Atualiza o nome caso o cliente tenha informado um diferente
       await prisma.cliente.update({
@@ -73,6 +76,8 @@ export async function POST(request: NextRequest) {
         dataPreferida: dataPreferida || null,
         horario: horario || null,
         observacoes: observacoes || null,
+        clienteId: clienteId || null,
+        planoId: planoId || null,
         status: 'pendente'
       }
     })

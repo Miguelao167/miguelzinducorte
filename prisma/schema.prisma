@@ -33,12 +33,15 @@ model Agendamento {
   metodoPagamento String?
   clienteId       String?
   cliente         Cliente? @relation(fields: [clienteId], references: [id])
+  planoId         String?
+  plano           Plano?   @relation(fields: [planoId], references: [id])
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   @@index([dataPreferida])
   @@index([status])
   @@index([clienteId])
+  @@index([planoId])
 }
 
 model Saque {
@@ -101,6 +104,7 @@ model Plano {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   assinaturas   Assinatura[]
+  agendamentos  Agendamento[]
 }
 
 model Assinatura {
