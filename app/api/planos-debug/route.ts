@@ -14,7 +14,6 @@ export async function GET() {
 
     const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim()
 
-    // Tenta fazer o match pra cada agendamento
     const matches = agendamentos.map(ag => {
       const servicoNome = (ag.servico || '').trim()
       const sNorm = norm(servicoNome)
@@ -45,6 +44,9 @@ export async function GET() {
     })
 
     return NextResponse.json({
+      ok: true,
+      timestamp: new Date().toISOString(),
+      totalPlanos: planos.length,
       planos: planos.map(p => ({
         id: p.id,
         nome_bruto: p.nome,
@@ -56,6 +58,6 @@ export async function GET() {
       agendamentos: matches,
     })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
   }
 }

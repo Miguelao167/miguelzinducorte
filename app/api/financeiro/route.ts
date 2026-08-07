@@ -93,6 +93,17 @@ export async function POST(request: NextRequest) {
         }) || null
       }
 
+      // Última tentativa: match por palavra-chave (bronze/prata/ouro/prime/diamante)
+      if (!plano && servicoNome) {
+        const sNorm = norm(servicoNome)
+        const todos = await prisma.plano.findMany()
+        const palavrasChave = ['bronze', 'prata', 'ouro', 'gold', 'prime', 'diamante', 'platinum']
+        const palavra = palavrasChave.find(k => sNorm.includes(k))
+        if (palavra) {
+          plano = todos.find(p => norm(p.nome).includes(palavra)) || null
+        }
+      }
+
       // Pula se não é explicitamente um plano e não achou
       if (!plano) {
         console.log('[PAGAMENTO] Plano não encontrado para servico:', servicoNome)
