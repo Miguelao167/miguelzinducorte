@@ -72,21 +72,24 @@ export async function POST(request: NextRequest) {
     if (agendamento.servico || agendamento.isPlano) {
       const servicoNome = (agendamento.servico || '').trim()
 
-      // Tenta match exato primeiro (case-insensitive)
+      // Função pra normalizar nome (sem acentos, lowercase)
+      const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim()
+
+      // Tenta match exato primeiro (case-insensitive e sem acento)
       let plano = servicoNome ? await prisma.plano.findFirst({
         where: {
           nome: { equals: servicoNome, mode: 'insensitive' },
         }
       }) : null
 
-      // Se não achou, tenta match contém
+      // Se não achou, tenta match contém normalizado
       if (!plano && servicoNome) {
         const todos = await prisma.plano.findMany()
+        const sNorm = norm(servicoNome)
         plano = todos.find(p => {
-          const pNome = p.nome.toLowerCase()
-          const sNome = servicoNome.toLowerCase()
+          const pNome = norm(p.nome)
           if (pNome.includes('importado') || pNome.includes('geral')) return false
-          return sNome.includes(pNome) || pNome.includes(sNome)
+          return sNorm.includes(pNome) || pNome.includes(sNorm)
         }) || null
       }
 
