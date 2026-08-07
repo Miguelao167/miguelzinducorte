@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
   Calendar,
@@ -57,6 +58,7 @@ const statusLabels: Record<string, string> = {
 }
 
 export default function OwnerDashboard({ user }: { user: OwnerUser }) {
+  const router = useRouter()
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -131,11 +133,14 @@ export default function OwnerDashboard({ user }: { user: OwnerUser }) {
         }),
       })
       if (res.ok) {
+        // Atualiza status local pra concluido + pago
         setAgendamentos((prev) =>
           prev.map((a) =>
-            a.id === id ? { ...a, pago: true, valorPago: valorNum, metodoPagamento: metodo } : a
+            a.id === id ? { ...a, pago: true, valorPago: valorNum, metodoPagamento: metodo, status: 'concluido' } : a
           )
         )
+        // Redireciona pra aba de Clientes
+        router.push('/owner/clientes')
       }
     } catch (err) {
       console.error(err)
