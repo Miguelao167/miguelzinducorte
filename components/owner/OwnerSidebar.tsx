@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
@@ -44,7 +45,7 @@ export default function OwnerSidebar() {
     <aside className="hidden md:flex md:flex-col w-64 lg:w-72 min-h-screen bg-white border-r border-gray-200 flex-shrink-0 sticky top-0 h-screen">
       {/* Logo */}
       <div className="p-6 border-b border-gray-100">
-        <a href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-primary to-accent-secondary flex items-center justify-center text-white font-bold">
             M
           </div>
@@ -52,7 +53,7 @@ export default function OwnerSidebar() {
             <div className="font-bold text-text-primary text-sm">MIGUELZIN</div>
             <div className="text-xs text-text-muted">Painel Admin</div>
           </div>
-        </a>
+        </Link>
       </div>
 
       {/* Menu */}
@@ -61,7 +62,7 @@ export default function OwnerSidebar() {
           const Icon = item.icon
           const active = isActive(item.href, item.exact)
           return (
-            <a
+            <Link
               key={item.href}
               href={item.href}
               className={`relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
@@ -81,7 +82,7 @@ export default function OwnerSidebar() {
                 <Icon className={`w-5 h-5 ${active ? 'text-white' : ''}`} />
                 <span className={active ? 'text-white' : ''}>{item.label}</span>
               </span>
-            </a>
+            </Link>
           )
         })}
       </nav>

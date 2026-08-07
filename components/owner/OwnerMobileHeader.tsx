@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Menu, X, LayoutDashboard, DollarSign, QrCode, Settings, BarChart3, Users, Scissors, FileText, LogOut } from 'lucide-react'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -82,7 +83,7 @@ export default function OwnerMobileHeader({ title }: { title: string }) {
                   const Icon = item.icon
                   const active = isActive(item.href, item.exact)
                   return (
-                    <a
+                    <Link
                       key={item.href}
                       href={item.href}
                       onClick={() => setOpen(false)}
@@ -94,7 +95,7 @@ export default function OwnerMobileHeader({ title }: { title: string }) {
                     >
                       <Icon className="w-5 h-5" />
                       {item.label}
-                    </a>
+                    </Link>
                   )
                 })}
               </nav>
