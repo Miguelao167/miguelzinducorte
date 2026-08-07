@@ -9,5 +9,5 @@ export default function OwnerLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <>{children}</>
+  return <div className="min-h-screen bg-gradient-to-br from-bg-secondary via-white to-bg-tertiary">{children}</div>
 }
