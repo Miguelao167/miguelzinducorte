@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       const servicoNome = (ag.servico || '').trim().toLowerCase()
 
       if (servicoNome) {
-        // Match exato
+        // Match exato (prioridade)
         plano = planos.find(p => p.nome.toLowerCase() === servicoNome)
         // Match contém
         if (!plano) {
@@ -62,9 +62,8 @@ export async function POST(request: NextRequest) {
         plano = planos[0]
       }
 
-      // Se ainda não achou mas é explicitamente plano OU o nome parece plano (Ouro, Prata, etc)
-      if (!plano && (ag.isPlano || /ouro|prata|bronze|diamante|plano/i.test(servicoNome))) {
-        // Usa o primeiro plano ativo como padrão
+      // Só pega o primeiro plano como último recurso se realmente for explicitamente um plano
+      if (!plano && ag.isPlano) {
         plano = planos[0]
       }
 
