@@ -81,6 +81,24 @@ export default function AssinantesPage() {
     }
   }
 
+  const importarDeAgendamentos = async () => {
+    if (!confirm('Importar agendamentos pagos como assinaturas? Cria assinatura pra cada agendamento de plano já pago.')) return
+    try {
+      const res = await fetch('/api/assinaturas/importar', { method: 'POST' })
+      const data = await res.json()
+      if (res.ok) {
+        setSuccessMsg(`${data.criadas} assinatura(s) criada(s)!`)
+        setTimeout(() => setSuccessMsg(''), 4000)
+        fetchAssinaturas()
+      } else {
+        alert(data.error || 'Erro ao importar')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Erro ao importar')
+    }
+  }
+
   const formatCurrency = (v: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
 
@@ -161,14 +179,23 @@ export default function AssinantesPage() {
         />
       </div>
 
-      {/* Botão atualizar */}
-      <button
-        onClick={fetchAssinaturas}
-        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50 w-fit mb-6"
-      >
-        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-        Atualizar
-      </button>
+      {/* Botões */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        <button
+          onClick={fetchAssinaturas}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50 w-fit"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          Atualizar
+        </button>
+        <button
+          onClick={importarDeAgendamentos}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-accent-primary hover:bg-accent-secondary transition-colors rounded-lg w-fit"
+        >
+          <Users className="w-4 h-4" />
+          Importar de Agendamentos
+        </button>
+      </div>
 
       {/* Lista */}
       {loading ? (
