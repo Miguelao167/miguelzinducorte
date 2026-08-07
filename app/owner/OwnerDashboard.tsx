@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
   Calendar,
   Clock,
@@ -13,12 +12,16 @@ import {
   X,
   RefreshCw,
   Trash2,
-  LogOut,
   ChevronDown,
   Filter,
   DollarSign,
+  CalendarClock,
+  CheckCircle2,
+  XCircle,
+  Menu,
 } from 'lucide-react'
-import Navbar from '@/components/layout/Navbar'
+import OwnerSidebar from '@/components/owner/OwnerSidebar'
+import OwnerMobileHeader from '@/components/owner/OwnerMobileHeader'
 
 interface OwnerUser {
   id: string
@@ -41,11 +44,11 @@ interface Agendamento {
   createdAt: string
 }
 
-const statusColors: Record<string, { bg: string; text: string; border: string }> = {
-  pendente: { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' },
-  confirmado: { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
-  cancelado: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
-  concluido: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+const statusColors: Record<string, { bg: string; text: string; border: string; ring: string }> = {
+  pendente: { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200', ring: 'ring-yellow-200' },
+  confirmado: { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200', ring: 'ring-green-200' },
+  cancelado: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', ring: 'ring-red-200' },
+  concluido: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', ring: 'ring-blue-200' },
 }
 
 const statusLabels: Record<string, string> = {
@@ -56,7 +59,6 @@ const statusLabels: Record<string, string> = {
 }
 
 export default function OwnerDashboard({ user }: { user: OwnerUser }) {
-  const router = useRouter()
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -81,12 +83,6 @@ export default function OwnerDashboard({ user }: { user: OwnerUser }) {
   useEffect(() => {
     fetchAgendamentos()
   }, [])
-
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/owner/login')
-    router.refresh()
-  }
 
   const updateStatus = async (id: string, status: string) => {
     try {
@@ -169,72 +165,96 @@ export default function OwnerDashboard({ user }: { user: OwnerUser }) {
     })
   }
 
-  return (
-    <>
-      <Navbar />
+  const statCards = [
+    {
+      label: 'Total',
+      sublabel: 'Agendamentos',
+      value: stats.total,
+      icon: Calendar,
+      bgIcon: 'bg-blue-100',
+      textIcon: 'text-blue-600',
+      ring: 'ring-blue-200',
+    },
+    {
+      label: 'Pendentes',
+      sublabel: 'Aguardando',
+      value: stats.pendente,
+      icon: Clock,
+      bgIcon: 'bg-yellow-100',
+      textIcon: 'text-yellow-600',
+      ring: 'ring-yellow-200',
+    },
+    {
+      label: 'Confirmados',
+      sublabel: 'Confirmados',
+      value: stats.confirmado,
+      icon: CheckCircle2,
+      bgIcon: 'bg-green-100',
+      textIcon: 'text-green-600',
+      ring: 'ring-green-200',
+    },
+    {
+      label: 'Concluídos',
+      sublabel: 'Finalizados',
+      value: stats.concluido,
+      icon: XCircle,
+      bgIcon: 'bg-purple-100',
+      textIcon: 'text-purple-600',
+      ring: 'ring-purple-200',
+    },
+  ]
 
-      <main className="min-h-screen pt-32 pb-12 bg-gradient-to-br from-white via-bg-secondary/50 to-white">
-        <div className="max-w-screen-2xl mx-auto px-4 md:px-8">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-bg-secondary via-white to-bg-tertiary flex">
+      <OwnerSidebar />
+
+      <div className="flex-1 min-w-0">
+        <OwnerMobileHeader title="Painel" />
+
+        <main className="p-4 md:p-8">
           {/* Header */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
-            <div className="flex-shrink-0">
-              <h1 className="text-2xl md:text-3xl font-bold text-text-primary whitespace-nowrap">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-text-primary">
                 Painel de Agendamentos
               </h1>
               <p className="text-text-secondary mt-1">
                 Olá, {user.name || user.email}! Gerencie os agendamentos da barbearia.
               </p>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <a
-                href="/owner/financeiro"
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-accent-primary hover:bg-accent-secondary rounded-lg transition-colors whitespace-nowrap"
-              >
-                <DollarSign className="w-4 h-4" />
-                Financeiro
-              </a>
-              <a
-                href="/owner/cobrancas"
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50 whitespace-nowrap"
-              >
-                Cobranças
-              </a>
-              <a
-                href="/owner/configuracoes"
-                className="hidden md:flex items-center gap-2 px-3 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50 whitespace-nowrap"
-              >
-                Configurações
-              </a>
-              <button
-                onClick={fetchAgendamentos}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50 whitespace-nowrap"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                <span className="hidden sm:inline">Atualizar</span>
-              </button>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 hover:text-red-700 transition-colors border border-red-200 rounded-lg hover:bg-red-50 whitespace-nowrap"
-              >
-                <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Sair</span>
-              </button>
-            </div>
+            <button
+              onClick={fetchAgendamentos}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors border border-accent-primary/20 rounded-lg hover:bg-accent-light/50 w-fit"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              Atualizar
+            </button>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            {[
-              { label: 'Total', value: stats.total, color: 'text-text-primary' },
-              { label: 'Pendentes', value: stats.pendente, color: 'text-yellow-600' },
-              { label: 'Confirmados', value: stats.confirmado, color: 'text-green-600' },
-              { label: 'Concluídos', value: stats.concluido, color: 'text-blue-600' },
-            ].map((stat) => (
-              <div key={stat.label} className="bg-white rounded-2xl p-6 md:p-8 border border-accent-primary/10 shadow-sm">
-                <div className={`text-4xl md:text-5xl font-bold ${stat.color}`}>{stat.value}</div>
-                <div className="text-base md:text-lg text-text-secondary mt-2 font-medium">{stat.label}</div>
-              </div>
-            ))}
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+            {statCards.map((stat) => {
+              const Icon = stat.icon
+              return (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <div className={`w-12 h-12 rounded-2xl ${stat.bgIcon} ${stat.textIcon} flex items-center justify-center mb-4`}>
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <div className="text-3xl md:text-4xl font-bold text-text-primary">
+                    {stat.value}
+                  </div>
+                  <div className="mt-1">
+                    <div className="text-sm font-semibold text-text-primary">{stat.label}</div>
+                    <div className="text-xs text-text-muted">{stat.sublabel}</div>
+                  </div>
+                </motion.div>
+              )
+            })}
           </div>
 
           {/* Filters */}
@@ -280,24 +300,25 @@ export default function OwnerDashboard({ user }: { user: OwnerUser }) {
 
           {/* Agendamentos List */}
           {!loading && filteredAgendamentos.length > 0 && (
-            <div className="space-y-4">
+            <div className="space-y-3">
+              <h2 className="text-lg font-bold text-text-primary mb-2">Agendamentos</h2>
               {filteredAgendamentos.map((agendamento) => {
                 const colors = statusColors[agendamento.status] || statusColors.pendente
                 return (
                   <motion.div
                     key={agendamento.id}
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`bg-white rounded-xl border ${colors.border} shadow-sm overflow-hidden`}
+                    className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden"
                   >
                     <div
-                      className="p-4 cursor-pointer"
+                      className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
                       onClick={() => setSelectedAgendamento(
                         selectedAgendamento?.id === agendamento.id ? null : agendamento
                       )}
                     >
                       <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${colors.bg} ${colors.text}`}>
                               {statusLabels[agendamento.status]}
@@ -315,22 +336,24 @@ export default function OwnerDashboard({ user }: { user: OwnerUser }) {
                             )}
                           </div>
                           <h3 className="font-semibold text-text-primary flex items-center gap-2">
-                            <User className="w-4 h-4 text-text-muted" />
+                            <span className="w-8 h-8 rounded-full bg-accent-light flex items-center justify-center flex-shrink-0">
+                              <User className="w-4 h-4 text-accent-primary" />
+                            </span>
                             {agendamento.nomeCliente}
                           </h3>
-                          <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-text-secondary">
-                            <span className="flex items-center gap-1">
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-text-secondary">
+                            <span className="flex items-center gap-1.5">
                               <Phone className="w-3.5 h-3.5" />
                               {agendamento.telefone}
                             </span>
                             {agendamento.dataPreferida && (
-                              <span className="flex items-center gap-1">
+                              <span className="flex items-center gap-1.5">
                                 <Calendar className="w-3.5 h-3.5" />
                                 {agendamento.dataPreferida}
                               </span>
                             )}
                             {agendamento.horario && (
-                              <span className="flex items-center gap-1">
+                              <span className="flex items-center gap-1.5">
                                 <Clock className="w-3.5 h-3.5" />
                                 {agendamento.horario}
                               </span>
@@ -338,7 +361,7 @@ export default function OwnerDashboard({ user }: { user: OwnerUser }) {
                           </div>
                         </div>
                         <ChevronDown
-                          className={`w-5 h-5 text-text-muted transition-transform ${
+                          className={`w-5 h-5 text-text-muted transition-transform flex-shrink-0 ${
                             selectedAgendamento?.id === agendamento.id ? 'rotate-180' : ''
                           }`}
                         />
@@ -346,108 +369,100 @@ export default function OwnerDashboard({ user }: { user: OwnerUser }) {
                     </div>
 
                     {/* Expanded Details */}
-                    <AnimatePresence>
-                      {selectedAgendamento?.id === agendamento.id && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="border-t border-gray-100"
-                        >
-                          <div className="p-4 bg-gray-50 space-y-3">
-                            {agendamento.preco && (
-                              <div className="text-sm">
-                                <span className="text-text-muted">Preço: </span>
-                                <span className="font-medium text-accent-primary">R$ {agendamento.preco}</span>
-                              </div>
-                            )}
-                            {agendamento.pago && agendamento.valorPago && (
-                              <div className="text-sm flex items-center gap-2 p-2 bg-green-50 rounded-lg">
-                                <DollarSign className="w-4 h-4 text-green-600" />
-                                <span className="text-green-700 font-medium">
-                                  Pago: R$ {agendamento.valorPago.toFixed(2)}
-                                </span>
-                              </div>
-                            )}
-                            {agendamento.observacoes && (
-                              <div className="text-sm">
-                                <span className="text-text-muted flex items-center gap-1 mb-1">
-                                  <MessageSquare className="w-3.5 h-3.5" />
-                                  Observações:
-                                </span>
-                                <p className="text-text-primary bg-white p-3 rounded-lg border border-gray-200">
-                                  {agendamento.observacoes}
-                                </p>
-                              </div>
-                            )}
-                            <div className="text-xs text-text-muted">
-                              Criado em: {formatDate(agendamento.createdAt)}
+                    {selectedAgendamento?.id === agendamento.id && (
+                      <div className="border-t border-gray-100">
+                        <div className="p-4 bg-gray-50 space-y-3">
+                          {agendamento.preco && (
+                            <div className="text-sm">
+                              <span className="text-text-muted">Preço: </span>
+                              <span className="font-medium text-accent-primary">R$ {agendamento.preco}</span>
                             </div>
-
-                            {/* Actions */}
-                            <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-200">
-                              <span className="text-xs text-text-muted w-full mb-1">Alterar status:</span>
-                              {!agendamento.pago && (
-                                <button
-                                  onClick={() => {
-                                    const valor = prompt(
-                                      `Valor recebido (padrão R$ ${agendamento.preco || '0'}):`,
-                                      agendamento.preco || ''
-                                    )
-                                    if (valor) marcarComoPago(agendamento.id, valor)
-                                  }}
-                                  className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-lg transition-colors"
-                                >
-                                  <DollarSign className="w-3.5 h-3.5" />
-                                  Marcar como Pago
-                                </button>
-                              )}
-                              {agendamento.status !== 'confirmado' && (
-                                <button
-                                  onClick={() => updateStatus(agendamento.id, 'confirmado')}
-                                  className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
-                                >
-                                  <Check className="w-3.5 h-3.5" />
-                                  Confirmar
-                                </button>
-                              )}
-                              {agendamento.status !== 'concluido' && (
-                                <button
-                                  onClick={() => updateStatus(agendamento.id, 'concluido')}
-                                  className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
-                                >
-                                  <Check className="w-3.5 h-3.5" />
-                                  Concluir
-                                </button>
-                              )}
-                              {agendamento.status !== 'cancelado' && (
-                                <button
-                                  onClick={() => updateStatus(agendamento.id, 'cancelado')}
-                                  className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
-                                >
-                                  <X className="w-3.5 h-3.5" />
-                                  Cancelar
-                                </button>
-                              )}
-                              <button
-                                onClick={() => deleteAgendamento(agendamento.id)}
-                                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors ml-auto"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                Excluir
-                              </button>
+                          )}
+                          {agendamento.pago && agendamento.valorPago && (
+                            <div className="text-sm flex items-center gap-2 p-2 bg-green-50 rounded-lg">
+                              <DollarSign className="w-4 h-4 text-green-600" />
+                              <span className="text-green-700 font-medium">
+                                Pago: R$ {agendamento.valorPago.toFixed(2)}
+                              </span>
                             </div>
+                          )}
+                          {agendamento.observacoes && (
+                            <div className="text-sm">
+                              <span className="text-text-muted flex items-center gap-1 mb-1">
+                                <MessageSquare className="w-3.5 h-3.5" />
+                                Observações:
+                              </span>
+                              <p className="text-text-primary bg-white p-3 rounded-lg border border-gray-200">
+                                {agendamento.observacoes}
+                              </p>
+                            </div>
+                          )}
+                          <div className="text-xs text-text-muted">
+                            Criado em: {formatDate(agendamento.createdAt)}
                           </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+
+                          {/* Actions */}
+                          <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-200">
+                            {!agendamento.pago && (
+                              <button
+                                onClick={() => {
+                                  const valor = prompt(
+                                    `Valor recebido (padrão R$ ${agendamento.preco || '0'}):`,
+                                    agendamento.preco || ''
+                                  )
+                                  if (valor) marcarComoPago(agendamento.id, valor)
+                                }}
+                                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-lg transition-colors"
+                              >
+                                <DollarSign className="w-3.5 h-3.5" />
+                                Marcar como Pago
+                              </button>
+                            )}
+                            {agendamento.status !== 'confirmado' && (
+                              <button
+                                onClick={() => updateStatus(agendamento.id, 'confirmado')}
+                                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                                Confirmar
+                              </button>
+                            )}
+                            {agendamento.status !== 'concluido' && (
+                              <button
+                                onClick={() => updateStatus(agendamento.id, 'concluido')}
+                                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                                Concluir
+                              </button>
+                            )}
+                            {agendamento.status !== 'cancelado' && (
+                              <button
+                                onClick={() => updateStatus(agendamento.id, 'cancelado')}
+                                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                                Cancelar
+                              </button>
+                            )}
+                            <button
+                              onClick={() => deleteAgendamento(agendamento.id)}
+                              className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors ml-auto"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              Excluir
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </motion.div>
                 )
               })}
             </div>
           )}
-        </div>
-      </main>
-    </>
+        </main>
+      </div>
+    </div>
   )
 }
