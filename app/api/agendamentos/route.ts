@@ -41,6 +41,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Limpa o telefone mantendo só dígitos pra evitar duplicar por formatação
+    const telefoneLimpo = telefone.replace(/\D/g, '')
+
+    // Auto-cadastra o cliente se não existir (match por telefone)
+    const clienteExistente = await prisma.cliente.findUnique({
+      where: { telefone: telefoneLimpo }
+    })
+
+    if (!clienteExistente) {
+      await prisma.cliente.create({
+        data: {
+          nome: nomeCliente,
+          telefone: telefoneLimpo,
+        }
+      })
+    } else if (clienteExistente.nome !== nomeCliente) {
+      // Atualiza o nome caso o cliente tenha informado um diferente
+      await prisma.cliente.update({
+        where: { id: clienteExistente.id },
+        data: { nome: nomeCliente }
+      })
+    }
+
     const agendamento = await prisma.agendamento.create({
       data: {
         nomeCliente,

@@ -185,7 +185,7 @@ export default function CobrancasDashboard({ user }: { user: OwnerUser }) {
         setPixGerado('')
         setQrCodeBase64('')
         setValorCobranca('')
-        fetchAgendamentos()
+        router.push('/owner/assinantes')
       }
     } catch (err) {
       console.error(err)
