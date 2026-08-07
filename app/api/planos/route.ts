@@ -3,8 +3,8 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
+    // Não filtra por ativo pra não perder planos antigos sem o campo setado
     const planos = await prisma.plano.findMany({
-      where: { ativo: true },
       orderBy: { preco: 'asc' },
     })
     return NextResponse.json({ planos })

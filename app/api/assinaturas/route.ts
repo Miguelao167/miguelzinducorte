@@ -3,8 +3,8 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
-    const assinaturas = await prisma.assinatura.findMany({
-      where: { ativa: true },
+    // Busca todas as assinaturas ativas ou não (pra mostrar tudo)
+    const todas = await prisma.assinatura.findMany({
       include: {
         cliente: true,
         plano: true,
@@ -12,24 +12,7 @@ export async function GET() {
       orderBy: { dataExpiracao: 'asc' },
     })
 
-    // Marca expiradas automaticamente
-    const agora = new Date()
-    for (const ass of assinaturas) {
-      if (ass.dataExpiracao < agora && ass.ativa) {
-        await prisma.assinatura.update({
-          where: { id: ass.id },
-          data: { ativa: false },
-        })
-      }
-    }
-
-    const atualizadas = await prisma.assinatura.findMany({
-      where: { ativa: true },
-      include: { cliente: true, plano: true },
-      orderBy: { dataExpiracao: 'asc' },
-    })
-
-    return NextResponse.json({ assinaturas: atualizadas })
+    return NextResponse.json({ assinaturas: todas })
   } catch (error) {
     console.error('Erro ao buscar assinaturas:', error)
     return NextResponse.json({ error: 'Erro ao buscar assinaturas' }, { status: 500 })
