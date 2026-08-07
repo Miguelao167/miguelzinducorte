@@ -272,8 +272,6 @@ export default function PlanosPainel({ user }: { user: { id: string; email: stri
               </div>
             )}
           </div>
-        </div>
-      </main>
 
       {/* Modal de Plano */}
       <AnimatePresence>
